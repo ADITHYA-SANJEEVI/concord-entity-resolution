@@ -258,7 +258,7 @@ This ledger preserves 24 meaningful experiment groups. It summarizes evidence wi
 - Code and artifacts: `experiments/asmi_crossscript_reproduction_01/`, `output/asmi-crossscript-59-reproduced-v1/`, and the seven frozen source modules now under `src/concord/legacy_amazon/`.
 - Strategy: deterministic LightGBM refit, exact schema validation, one complete test scoring pass, global ownership, and 0.64 thresholds.
 - Data: 3,376,945 training candidate rows, frozen POLICY_DEV, and 87,934,151 test pairs.
-- Verified result: exact POLICY_DEV emitted links and metric, selected output hash `0153c2ad53f0cfbecce5339075968588d131d3144f6c85c49bb2a5a05741d145`, public Macro F0.5 0.955136, rank 2502.
+- Verified result: exact POLICY_DEV emitted links and metric, selected output hash `0153c2ad53f0cfbecce5339075968588d131d3144f6c85c49bb2a5a05741d145`, public Macro F0.5 0.955136.
 - Model hashes: text `7c1797a78d4585647c818868a1d8960790cd2a5f77b9c90a36af9a2a4c710784`; joblib `c5b0e2246794f5e79d6cfed1e16d82040d682bdee4cf94eccb760d61e69d6610`.
 - Disposition: PROMOTED. This is the `amazon-ml-2026-final` baseline.
 - Lesson: exact decision equivalence and artifact validation were more important than negligible floating-point probability differences.

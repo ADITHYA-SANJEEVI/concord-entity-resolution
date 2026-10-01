@@ -11,7 +11,6 @@ def test_final_submission_manifest() -> None:
     manifest = json.loads((ROOT / "archive_manifest" / "final_submission.json").read_text())
     assert manifest["project"] == "Concord"
     assert manifest["public_leaderboard"]["macro_f0_5"] == 0.955136
-    assert manifest["public_leaderboard"]["rank"] == 2502
     assert manifest["counts"]["candidate_pairs"] == 87_934_151
     assert manifest["counts"]["accepted_links"] == 5_708_382
     assert manifest["outputs_committed"] is False

@@ -5,7 +5,6 @@
 | Measure | Value | Evidence level |
 |---|---:|---|
 | Public leaderboard Macro F0.5 | 0.955136 | Portal evidence and confirmed submission chronology |
-| Public leaderboard rank | 2502 | Portal evidence |
 | POLICY_DEV Macro F0.5 | 0.9593640004712406 | Qualification and exact reproduction gate |
 | POLICY_DEV TP / FP / FN | 9,826 / 162 / 757 | Qualification report |
 | Test Source-1 rows | 1,732,544 | Frozen outputs and official validator |

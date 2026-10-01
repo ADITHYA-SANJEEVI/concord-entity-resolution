@@ -9,7 +9,6 @@ The repository's first baseline is historical. It records the exact source behav
 | Item | Verified value |
 |---|---:|
 | Public leaderboard Macro F0.5 | 0.955136 |
-| Public leaderboard rank | 2502 |
 | POLICY_DEV Macro F0.5 | 0.9593640004712406 |
 | Test Source-1 rows | 1,732,544 |
 | Valid Source-2/Source-3 target IDs | 9,969,589 |
@@ -19,7 +18,7 @@ The repository's first baseline is historical. It records the exact source behav
 | Training candidate rows | 3,376,945 |
 | Model inputs | 59 float32 features |
 
-The leaderboard value and rank are supported by preserved portal evidence and user-confirmed submission chronology. The remaining counts and development metric are supported by local manifests, reports, output hashes, and validator evidence. See [Results](docs/RESULTS.md) and [Provenance](docs/PROVENANCE.md).
+The leaderboard value is supported by preserved portal evidence and user-confirmed submission chronology. The remaining counts and development metric are supported by local manifests, reports, output hashes, and validator evidence. See [Results](docs/RESULTS.md) and [Provenance](docs/PROVENANCE.md).
 
 ## Historical architecture
 

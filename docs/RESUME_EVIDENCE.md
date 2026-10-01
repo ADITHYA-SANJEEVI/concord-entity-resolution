@@ -6,7 +6,6 @@ Use this document to keep public claims within the preserved evidence.
 |---|---|---|---|
 | Amazon ML Challenge 2026 origin | VERIFIED | Submission package, methodology, and lineage records | Built a business entity-resolution system for Amazon ML Challenge 2026 with Team Aurorawave. |
 | Public Macro F0.5 of 0.955136 | VERIFIED | Portal evidence and confirmed submission chronology | Achieved 0.955136 public Macro F0.5. |
-| Public rank 2502 | VERIFIED | Portal evidence | Placed rank 2502 on the public leaderboard. |
 | 1,732,544 Source-1 rows | VERIFIED | Frozen outputs and official validator | Produced deterministic results for 1.73 million Source-1 records. |
 | 9,969,589 target IDs | VERIFIED | Official validator with ID checking | Matched against a 9.97 million-record S2/S3 target universe. |
 | 87,934,151 candidate pairs | VERIFIED | Graph and score manifests | Built and scored an 87.9 million-pair candidate graph. |

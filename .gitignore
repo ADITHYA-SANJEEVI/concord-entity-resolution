@@ -1,0 +1,50 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Packaging and build output
+dist/
+build/
+*.egg-info/
+
+# Large or generated data and model artifacts
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.dat
+*.bin
+*.parquet
+*.tsv
+*.csv
+*.zip
+*.safetensors
+*.npy
+*.npz
+*.pkl
+*.joblib
+
+# Generated working directories
+tmp/
+cache/
+artifacts/generated/
+outputs/
+
+# Explicitly versioned synthetic fixtures
+!examples/synthetic/*.tsv
+!tests/fixtures/*.tsv
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

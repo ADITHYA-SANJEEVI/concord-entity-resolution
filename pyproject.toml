@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "concord-entity-resolution"
+version = "0.1.0"
+description = "A reproducible multilingual entity-resolution project with a preserved Amazon ML Challenge 2026 baseline"
+requires-python = ">=3.12"
+authors = [
+  { name = "Adithya Sanjeevi" },
+  { name = "Asmi Balla" },
+  { name = "Shreya Saha" },
+]
+dependencies = []
+
+[project.optional-dependencies]
+amazon = [
+  "numpy==2.4.4",
+  "pandas==3.0.2",
+  "pyarrow==25.0.1",
+  "scipy==1.17.1",
+  "scikit-learn==1.8.0",
+  "lightgbm==4.7.0",
+  "joblib==1.5.3",
+  "RapidFuzz==3.14.5",
+  "Unidecode==1.4.0",
+  "duckdb==1.1.2",
+  "sparse-dot-topn==1.2.0",
+  "psutil==7.0.0",
+]
+dev = ["pytest>=8.0", "ruff>=0.8"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/concord"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

@@ -1,0 +1,23 @@
+project: Concord
+historical_baseline: amazon-ml-2026-final
+retrieval:
+  partition_key: country
+  views:
+    - name_char_wb_trigram_top5
+    - compact_name_char_trigram_top5
+    - address_word_unigram_top5
+    - equal_weight_name_address_top10
+    - reverse_equal_weight_name_address_top8
+features:
+  base: 55
+  cross_script: 4
+  total: 59
+model:
+  type: LGBMClassifier
+  threshold_s2: 0.64
+  threshold_s3: 0.64
+policy:
+  ownership: global_target_winner
+  primary_sort: score_descending
+  tie_break: s1_id_ascending
+note: "Descriptive copy only. The JSON files in src/concord/legacy_amazon/artifacts are authoritative."

@@ -1,0 +1,15 @@
+{
+  "objective": "binary",
+  "metric": "binary_logloss",
+  "n_estimators": 600,
+  "learning_rate": 0.05,
+  "num_leaves": 63,
+  "min_child_samples": 100,
+  "reg_lambda": 1.0,
+  "subsample": 1.0,
+  "colsample_bytree": 1.0,
+  "early_stopping": false,
+  "class_weight": null,
+  "random_state": 42,
+  "seed_recovery": "DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND"
+}

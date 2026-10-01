@@ -1,0 +1,58 @@
+{
+  "project": "Concord",
+  "historical_origin": "Team Aurorawave, Amazon ML Challenge 2026 Business Entity Resolution",
+  "team": [
+    "Adithya Sanjeevi",
+    "Asmi Balla",
+    "Shreya Saha"
+  ],
+  "public_leaderboard": {
+    "macro_f0_5": 0.955136,
+    "rank": 2502,
+    "evidence": "portal evidence and user-confirmed submission chronology"
+  },
+  "policy_dev": {
+    "macro_f0_5": 0.9593640004712406,
+    "tp": 9826,
+    "fp": 162,
+    "fn": 757
+  },
+  "counts": {
+    "source1_rows": 1732544,
+    "valid_target_ids": 9969589,
+    "candidate_pairs": 87934151,
+    "accepted_links": 5708382,
+    "empty_source1_rows": 100939,
+    "training_candidate_rows": 3376945,
+    "base_features": 55,
+    "cross_script_features": 4,
+    "total_features": 59
+  },
+  "decision_policy": {
+    "model": "LGBMClassifier",
+    "ownership": "global target winner by score descending, then s1_id ascending",
+    "s2_threshold": 0.64,
+    "s3_threshold": 0.64
+  },
+  "artifacts": {
+    "submission_zip": {
+      "filename": "Aurorawave_submission.zip",
+      "bytes": 523531529,
+      "sha256": "d0574aab454f2e4798986ed5b488411bd04937b27ac6a9c17601235d4f07618e"
+    },
+    "matching_results": {
+      "filename": "matching_results.tsv",
+      "bytes": 96006728,
+      "sha256": "0153c2ad53f0cfbecce5339075968588d131d3144f6c85c49bb2a5a05741d145"
+    },
+    "candidate_pairs": {
+      "filename": "candidate_pairs.tsv",
+      "bytes": 1155697650,
+      "sha256": "709164321b318e89763b37277dbcb2e96e40ccdcec93091bfe96c01a6e30a526"
+    }
+  },
+  "outputs_committed": false,
+  "model_committed": false,
+  "omission_reason": "Organizer datasets, large generated outputs, and challenge-trained model artifacts are excluded. Model redistribution rights are not established.",
+  "verified_during_archive_preparation": "2026-10-02"
+}

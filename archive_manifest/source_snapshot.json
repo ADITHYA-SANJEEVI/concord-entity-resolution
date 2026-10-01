@@ -1,0 +1,18 @@
+{
+  "source": "amazon_ml_final_package/code/business_entity_resolution/src",
+  "snapshot_destination": "src/concord/legacy_amazon",
+  "behavior": "Exact file copies. No algorithmic rewrite.",
+  "files": {
+    "__init__.py": "73c122255b543f41a3043eea211fb041e3eea092db22d5ee8df81810e8ac6993",
+    "compare_outputs.py": "2b0194cdd9cc9c6229189d3fc1b3d38a57d060f8502be3f5b499cd78f1ed22a0",
+    "frozen_full_graph_builder.py": "22d785154cc8b04fd7b0cd5014f0e137fbd16baabf9ad992bb0234d24ad59535",
+    "frozen_stage1_55_scorer.py": "666addde303070df8b1816dab0af75e7b913a192270e8378f9c491f5fc4a6b85",
+    "frozen_test_production.py": "b956c6ffcf3cfe5ee2d0e0bdf5e302a12ddfefec4897d70fc9e7d9a260f62f16",
+    "qualified_crossscript_generator.py": "3ee1093ea66e9382dfc851958b702c9e01acb938321a6a75f79f44e094a60207",
+    "run_pipeline.py": "554a997ad0c13a9d66d5605a44572358b527e6297d799366098c84fef48ab5b2",
+    "validate_submission.py": "7f43961ed2163b1a6158d19ab510a54af3633d6a7304a9cc76816f851592a7c8",
+    "artifacts/lightgbm_config.json": "a80b817758f7748daa3c5c28628a210efe8703635eb5faabc57e227dd06e762d",
+    "artifacts/ordered_59_feature_schema.json": "ed766a44c8c5bb20abc8d6473ba95cffd9755bd4a65c88752b34adab0705c5f0"
+  },
+  "note": "The trained model files are described in artifacts.json and intentionally omitted from Git."
+}

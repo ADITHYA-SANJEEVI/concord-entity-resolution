@@ -24,7 +24,7 @@ The system responsible for the preserved public result used:
 8. A fixed 0.64 threshold for both S2 and S3.
 9. Deterministic output ordering and structural validation.
 
-The public leaderboard result associated with the preserved submission was Macro F0.5 0.955136 at rank 2502. The selected POLICY_DEV result was 0.9593640004712406.
+The public leaderboard result associated with the preserved submission was Macro F0.5 0.955136. The selected POLICY_DEV result was 0.9593640004712406.
 
 ## Frozen submission identity
 
@@ -40,4 +40,4 @@ These files are not committed. Their identities and local paths are recorded in 
 
 The selected test production was completed on September 27, 2026, before the later external-evidence, external candidate-rescue, web-identity, and final meta-decoder experiments. Those branches did not contribute to the packaged 0.955136 submission. Earlier and later XGBoost, Qwen, model2vec, cross-encoder, cardinality, expected-F0.5, oracle, and decision-policy experiments are also excluded from the submitted architecture unless the experiment ledger explicitly says otherwise.
 
-The repository does not claim Top 50, Top 100, PPI selection, or any recognition beyond the verified score and rank.
+The repository does not claim Top 50, Top 100, PPI selection, or other unsupported recognition.

@@ -1,9 +1,10 @@
-"""Pass A CLI: inspect and retrieve. No speculative later-stage commands."""
+"""Gated C1/C2/C3 CLI; C4 surfaces remain unavailable."""
 
 import argparse
 import platform
 import subprocess
 import sys
+from contextlib import redirect_stdout
 from dataclasses import asdict
 from datetime import UTC, datetime
 from importlib.metadata import version
@@ -300,13 +301,22 @@ def parser() -> argparse.ArgumentParser:
                                      required=True)
                 command.add_argument("--run-id", required=True)
                 command.add_argument("--ks", default="1,5,10,20", help="frontier K values for all lanes")
+    from concord.c3_cli import add_parsers
+
+    add_parsers(verbs)
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
-        if args.verb == "retrieve":
+        if args.verb in ("train", "resolve", "evaluate"):
+            from concord.c3_cli import command
+
+            # Retain LightGBM diagnostics on stderr; stdout remains canonical JSON.
+            with redirect_stdout(sys.stderr):
+                result = command(args)
+        elif args.verb == "retrieve":
             result = _retrieve_command(args)
             if args.action == "lane-rescue":
                 result = {key: result[key] for key in ("population", "lane_rescue",

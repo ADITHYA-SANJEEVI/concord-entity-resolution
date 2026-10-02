@@ -44,7 +44,7 @@ The five retrieval views were normalized-name `char_wb` trigrams at top-5, compa
 - `archive_manifest/` identifies local artifacts, omitted large files, model hashes, and experiment directories.
 - `docs/EXPERIMENT_LEDGER.md` records promoted, rejected, diagnostic, and later experimental work.
 - `examples/synthetic/` contains invented records that document the input shape without redistributing organizer data.
-- New Concord C1/C2 contracts, normalization, logical identities, Parquet IO, inspection, and bounded retrieval live outside `legacy_amazon`. The features, modeling, inference, and evaluation packages remain scaffolding for later gates.
+- New Concord C1/C2/C3 contracts, bounded retrieval, reference features/scoring, ownership, decoding and evaluation live outside `legacy_amazon`.
 
 ## Concord Pass A (C1 + C2)
 
@@ -59,7 +59,18 @@ baseline. Canonical sampling order and the empty-vocabulary fail-safe adapter ar
 private capped-sample membership and historical full-graph parity remain unverified.
 The separately named synthetic profile relaxes document-frequency cutoffs for tiny fixtures.
 See [Pass A usage and semantics](docs/PASS_A_USAGE.md) and [Pass A evidence](PASS_A_EVIDENCE.md).
-Scoring, ownership, decoding, and the later research gates are deferred.
+Pass A evidence remains the accepted C1/C2 checkpoint.
+
+## Concord Pass B (C3)
+
+Run `python scripts/reproduce_pass_b.py --output outputs/pass-b-demo` for the invented
+entity-disjoint training/calibration/test pipeline. C3 implements ordered 59-feature
+reference extraction, retrieval-derived hard negatives, LightGBM, deterministic global
+ownership, the frozen 0.640 decoder, set quality, policy-stage attribution and compact
+resolution evidence. The gated `train`, `resolve` and `evaluate` CLI surfaces are available.
+See [Pass B usage](docs/PASS_B_USAGE.md) and [Pass B evidence](PASS_B_EVIDENCE.md).
+Public function/reference parity does not establish private model/feature/probability
+parity. C4 challengers, benchmark and stability research remain deferred.
 
 ## Reproducing the historical pipeline
 

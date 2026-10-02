@@ -136,7 +136,7 @@ Implementation proceeds strictly through four sequential gates:
 
 Every project claim must adhere to `docs/audit/CLAIM_BOUNDARY.md`:
 1. **Scale Wording:** Always state: *"Resolved 1.73M source entities against a 9.97M-target universe using bounded multi-view retrieval that produced an 87.9M-pair candidate graph."* Never state or imply a Cartesian multiplication ($1.73\text{M} \times 9.97\text{M} = 87.9\text{M}$).
-2. **Competition Metrics:** Leaderboard Macro F0.5 (0.955136) and rank (2502) are preserved historical evidence, not live portal verifications.
+2. **Competition Metrics:** Leaderboard Macro F0.5 (0.955136) is preserved historical evidence, not a live portal verification.
 3. **Cross-Script Gain:** The +0.00558 POLICY_DEV gain from transliteration features is preserved experiment-ledger evidence (#13), not newly reproduced.
 4. **Unverified Claims:** Post-submission recollection of `~0.966`, `~2.9 GiB` RAM, and `32.05M / 16.76M` candidate runs are **UNVERIFIED** and must never be cited as verified facts.
 

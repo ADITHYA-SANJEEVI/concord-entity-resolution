@@ -25,7 +25,6 @@
 | **Global Target Ownership** | "Enforced deterministic global target ownership where each target is resolved to at most one source query via score-partitioned window queries." | **SAFE NOW** | Implemented directly in SQL / DuckDB pipeline logic. |
 | **Deterministic Tie-Breaking & Validation** | "Built deterministic sorting, thresholding (0.640), and structural validation ensuring submission integrity and subset compliance." | **SAFE NOW** | Provenance hashes and validator scripts verified. |
 | **Public Leaderboard Score** | "Achieved a verified public leaderboard Macro F0.5 of 0.955136." | **SAFE AS HISTORICAL** | Preserved historical submission evidence. Do not imply current live portal verification. |
-| **Public Leaderboard Rank** | "Placed rank 2502 on the public competition leaderboard." | **SAFE AS HISTORICAL** | Preserved portal evidence. |
 | **POLICY_DEV Metric** | "Recorded a Macro F0.5 of 0.959364 on the frozen POLICY_DEV validation split." | **SAFE AS HISTORICAL** | Preserved in `final_submission.json` and qualification records. |
 | **Entity Population Scale** | "Resolved 1,732,544 source entities against an index of approximately 9,969,589 target entities." | **SAFE AS HISTORICAL** | Supported by test production constants and validator manifests. |
 | **Candidate Graph Reduction** | "Reduced an enormous Cartesian comparison space down to an 87,934,151-pair candidate graph using bounded multi-view retrieval." | **SAFE AS HISTORICAL** | **Mandatory correction:** Never phrase as $1.73\text{M} \times 9.97\text{M} = 87.9\text{M}$. Emphasize sparse candidate reduction. |
@@ -40,7 +39,7 @@
 | **Peak RAM ~2.9 GiB** | "Pipeline executed with a peak RAM of ~2.9 GiB." | **UNSAFE / DO NOT CLAIM** | **Unverified prompt context.** No committed artifact or run log supports this memory number. |
 | **Candidate Volumes ~32.05M / ~16.76M** | "Candidate generation produced 32.05M raw candidates pruned to 16.76M at K=20." | **UNSAFE / DO NOT CLAIM** | **Unverified prompt context.** Does not match any committed manifest. |
 | **Arbitrary Subset Recall Ceilings** | "Strict prefix ceiling: 0.976654; retrieval ceiling: 0.993058." | **UNSAFE / DO NOT CLAIM** | **Unverified prompt context.** The only preserved sample oracle is 0.999623 on a 5k sample (Ledger #7). |
-| **Top 50 / Top 100 / PPI Recognition** | "Selected for PPI / Top 50 finish." | **UNSAFE / DO NOT CLAIM** | No evidence exists in the repository. Rank 2502 is the only verified standing. |
+| **Top 50 / Top 100 / PPI Recognition** | "Selected for PPI / Top 50 finish." | **UNSAFE / DO NOT CLAIM** | No evidence exists in the repository. |
 | **World-First / Novel Architecture** | "First proof-carrying entity-resolution architecture in literature." | **UNSAFE / DO NOT CLAIM** | No comparative literature review exists. Describe the concrete engineering without novelty hype. |
 | **Live Distributed System** | "Concord operates as a fault-tolerant distributed consensus engine." | **UNSAFE / DO NOT CLAIM** | **Confuses Concord with Relay.** Concord is a bounded IR/ER ML pipeline, not a distributed system. |
 
@@ -49,7 +48,7 @@
 ## 3. Safe Resume Bullets (Approved Verbatim)
 
 ```text
-- Built a large-scale business entity-resolution pipeline for the Amazon ML Challenge 2026 (Team Aurorawave), achieving a verified 0.955136 public Macro F0.5 (Rank 2502).
+- Built a large-scale business entity-resolution pipeline for the Amazon ML Challenge 2026 (Team Aurorawave), with a preserved historical public Macro F0.5 record of 0.955136.
 - Reduced a massive potential Cartesian search space across 1.73M source records and 9.97M target entities into a bounded 87.9M-pair candidate graph using five-view sparse TF-IDF retrieval (name, compact name, address, combined, reverse).
 - Engineered a 59-feature schema encompassing string metrics, exact TF-IDF cosines, retrieval ranks, DuckDB windowed graph-context features, and deterministic Unidecode cross-script signals.
 - Trained a 59-feature LightGBM classifier and enforced global target ownership via score-partitioned window queries, producing 5.7M accepted links with deterministic subset validation.

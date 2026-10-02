@@ -40,7 +40,7 @@ flowchart TD
         V3_Graph --> V3_Feat["55 Base Features + 4 Unidecode Cross-Script Features (f55-f58)"]
         V3_Feat --> V3_Mdl["59-Feature LightGBM (Refit parity <= 1.97e-11)"]
         V3_Mdl --> V3_Dec["Global Target Ownership + Fixed 0.640 Threshold"]
-        V3_Dec --> V3_Out["POLICY_DEV: 0.959364 | Public LB: 0.955136 (Rank 2502)"]
+        V3_Dec --> V3_Out["POLICY_DEV: 0.959364 | Public LB: 0.955136"]
     end
 
     V1 -.->|Ceiling & Recall Deficits| V2
@@ -127,7 +127,7 @@ flowchart TD
   - Output Formatting: Emitted 5,708,382 accepted links and 100,939 empty S1 rows.
 - **Recorded Results:**
   - POLICY_DEV: **Macro F0.5 = 0.9593640004712406** (TP: 9,826, FP: 162, FN: 757). Gain of $+0.005573$ over 55-feature control.
-  - Public Leaderboard: **Macro F0.5 = 0.955136**, **Rank: 2502**.
+  - Public Leaderboard: **Macro F0.5 = 0.955136**.
 - **Output Artifacts:**
   - `matching_results.tsv` (SHA-256: `0153c2ad...`, 96,006,728 bytes)
   - `candidate_pairs.tsv` (SHA-256: `70916432...`, 1,155,697,650 bytes)

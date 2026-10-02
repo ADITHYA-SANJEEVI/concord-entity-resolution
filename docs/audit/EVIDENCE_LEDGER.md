@@ -26,7 +26,6 @@
 | **CLM-09** | Omitted model artifact identities | joblib: `c5b0e224...`<br>txt: `7c1797a7...` | SHA-256 | Model artifact | `archive_manifest/artifacts.json`, `docs/REPRODUCIBILITY.md` | **A** | VERY HIGH | Blocked (Model omitted) | Verified omitted model digests. Replay requires privately supplying these files. |
 | **CLM-10** | Deterministic normalization transform | NFKD + strip combining + casefold | Transform | All records | `frozen_full_graph_builder.py:21:fold()` | **A** | VERY HIGH | Runnable Now | `fold()` is self-contained Python code in the repository. |
 | **CLM-11** | Public leaderboard Macro F0.5 | 0.955136 | Macro F0.5 | Public Test (Leaderboard) | `archive_manifest/final_submission.json`, `docs/RESULTS.md` | **B** | HIGH | Blocked (Competition closed) | Preserved historical submission evidence. Not independently re-queried from a live portal. |
-| **CLM-12** | Public leaderboard rank | 2502 | Rank | Public Test (Leaderboard) | `archive_manifest/final_submission.json`, `docs/RESULTS.md` | **B** | HIGH | Blocked (Competition closed) | Preserved historical competition evidence. |
 | **CLM-13** | Selected POLICY_DEV Macro F0.5 | 0.9593640004712406 | Macro F0.5 | POLICY_DEV split | `archive_manifest/final_submission.json`, `docs/RESULTS.md` | **B** | HIGH | Blocked (Private splits) | Preserved qualification report checkpoint. Verified calculation contract, unrerun locally. |
 | **CLM-14** | Test Source-1 population | 1,732,544 | Count | Test S1 | `frozen_test_production.py:619`, `archive_manifest/final_submission.json` | **B** | HIGH | Blocked (Private test data) | Hardcoded integrity assertion in test orchestrator and output manifests. |
 | **CLM-15** | Valid target universe count | 9,969,589 | Count | Test S2 + S3 | `archive_manifest/final_submission.json`, `docs/RESULTS.md` | **B** | HIGH | Blocked (Private test data) | Supported by submission manifests and validator checks. |
@@ -54,9 +53,9 @@
 
 ## 2. Evidence Reconciliation Summary
 
-- **Total Claims Audited:** 34
+- **Total Claims Audited:** 33
 - **Class A (Directly Verified):** 10
-- **Class B (Strongly Supported):** 12
+- **Class B (Strongly Supported):** 11
 - **Class C (Historical Context / Unrecovered):** 9
 - **Class E (Aspirational / Future Design):** 3
 - **Explicitly Downgraded / Unverified Prompt Figures:**

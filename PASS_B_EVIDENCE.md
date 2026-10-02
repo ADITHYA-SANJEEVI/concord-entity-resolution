@@ -9,11 +9,26 @@ was not main. `concord-pass-a-c1-c2-public` resolved to exactly that starting SH
 Startup branch/status/HEAD/log/tag checks all passed. No merge, push or tag action
 was performed.
 
-Implementation and final clean-reproduction commit identities will be recorded after
-the reviewed implementation commit exists. Development reproductions are honestly
-dirty runs, not execution from a future implementation commit. A separate evidence-
-only commit will retain actual clean-commit run instances. The first commit closes
-the tested implementation; it does not pretend those development runs were clean.
+Implementation commit: `fd875dbd7e1a26ea1616f2b740a8c79b87d13e49`.
+The tree was clean before both final public reproductions and remained clean until
+both completed. All **36 COMPLETED manifests** (18 per platform) identify that
+implementation SHA and **dirty=false**. Only afterward were this document and the
+new bundle updated for the separate evidence-only commit. No source changed after
+the producing implementation commit. Development runs remain honestly dirty local
+artifacts and are not relabelled as clean evidence.
+
+Current evidence: [PASS_B_RUNS.json](docs/evidence/PASS_B_RUNS.json), **889,369 bytes**.
+It retains unmodified clean manifest instances, physical/logical manifest hashes,
+actual reproduction summaries, eight actual capsule examples and local bulk-artifact
+pointers. It contains metadata/reports, not model weights or bulk feature/candidate
+tables. The collector validated every artifact's physical hash and size, all recorded
+source hashes, summary-to-report consistency and clean producing identities.
+
+```powershell
+.venv\Scripts\python.exe scripts/reproduce_pass_b.py --output outputs/pass-b-windows-clean
+wsl -d Ubuntu --exec /var/tmp/concord-pass-a-closure-venv/bin/python scripts/reproduce_pass_b.py --output outputs/pass-b-linux-clean
+.venv\Scripts\python.exe tmp/collect_pass_b_evidence.py
+```
 
 ## Exact files changed
 
@@ -44,7 +59,7 @@ tests/test_c3_resolution.py
 tests/test_c3_training_storage.py
 ```
 
-The subsequent evidence-only commit updates this document and adds
+The evidence-only commit updates this document and adds
 `docs/evidence/PASS_B_RUNS.json`. No bulk output or model artifact is staged.
 
 ## Scope and preserved boundaries
@@ -109,9 +124,9 @@ mined row retains its reason, graph/retrieval/split/mining identities. Unretriev
 truths are counted but never inserted into the graph. Labels are assumed complete
 within the declared split; this policy is unsuitable for unknown/incomplete labels.
 
-Development reproduction measured 5,290 training candidates, 240 retrieved positives
+Clean reproduction measured 5,290 training candidates, 240 retrieved positives
 and 3,670 selected negatives. Both classes enter training; no Cartesian negatives are
-created. Final measured values will be tied to the clean-run bundle.
+created. These values match both platforms and are retained in the clean-run bundle.
 
 ## Model, calibration, ownership and decoder
 
@@ -121,7 +136,7 @@ historical/reference 600 estimators, learning rate .05, 63 leaves, min_child_sam
 100, L2 1.0, full row/column sampling, no class weights and no early stopping.
 Seed provenance is `DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND`; original historical seed
 recovery is not claimed. Single-threaded deterministic column-wise execution is an
-explicit new portability setting. Development reproduction fitted 600 actual trees.
+explicit new portability setting. Both clean reproductions fitted 600 actual trees.
 
 Model identity retains format, artifact hash, model config, ordered schema, training
 dataset/split/plan, mining/pair identities, feature artifact, retrieval config,
@@ -130,10 +145,27 @@ model bytes, metadata identity, library version, configuration and feature order
 Within-platform repeat checks cover model bytes and logical scores/resolutions;
 cross-platform model-byte equality is not assumed.
 
+The observed model artifact SHA-256 is
+`56c7835ce07f19cdf0f64f8a28e41066fa91f3d39c93acb3856d380c6f9acdb8`;
+its full model identity is
+`9e536cf25f63161b20ed2b1d75d3180a558d3e10b6543f1ce8cb6373d13a56e7`.
+Those actual identities matched in these runs, without a framework-level guarantee
+of future cross-platform byte identity.
+
 Calibration reports describe retrieved held-out pairs with AUROC/AUPRC, log loss,
 Brier, fixed bins/ECE and score distributions. Absent-class/empty metrics are null.
 Slope/intercept are unestimated; no calibration transform or threshold tuning occurs.
 These tiny fixtures cannot establish general calibration or model performance.
+
+| Retrieved-pair population | Pairs | AUROC | AUPRC | Log loss | Brier | ECE |
+|---|---:|---:|---:|---:|---:|---:|
+| P0/pass-b-v1/calibration/retrieved-pairs | 220 | 0.8976190476190476 | 0.7202020202020202 | 0.1414498631721216 | 0.013634383826212428 | 0.01361637625036344 |
+| P0/pass-b-v1/test/retrieved-pairs | 218 | 0.9236694677871149 | 0.7438681894776259 | 0.18199038229368325 | 0.018344858615228003 | 0.018324438030941345 |
+
+Both platforms produced these executed values; raw reliability bins/distributions
+and class counts are retained in the bundle. They describe retrieved pairs, so the
+retrieval miss is not silently counted as a scored negative. Pair quality is separate
+from set quality.
 
 Ownership is global within the declared candidate population: score DESC, s1_id ASC,
 exactly one rank-1 owner per target. Owner rival is the runner-up; loser rival is the
@@ -147,10 +179,20 @@ Quality is macro per-S1 set F0.5/precision/recall, exact-set accuracy and truth-
 zero/single/multi cohorts. Empty/empty has P=R=F=1; empty truth/nonempty prediction
 has P=F=0,R=1; nonempty truth/empty prediction has P=R=F=0. Empty cohorts are undefined.
 
-The executed development test fixture measured macro F0.5 0.6145833333333334,
+The executed clean test fixture measured macro F0.5 0.6145833333333334,
 precision 0.625, recall 0.71875, exact-set accuracy 0.5625, and 12 accepted links over
 16 queries. These are invented P0 observations, not benchmark or private results.
-Final values and provenance will be recorded from clean runs.
+Both platforms measured the same values from the clean producing commit.
+
+| Query population | Queries | Macro F0.5 | Macro precision | Macro recall | Exact-set accuracy | Accepted links |
+|---|---:|---:|---:|---:|---:|---:|
+| P0/pass-b-v1/calibration | 12 | 0.75 | 0.75 | 0.8333333333333334 | 0.75 | 9 |
+| P0/pass-b-v1/test | 16 | 0.6145833333333334 | 0.625 | 0.71875 | 0.5625 | 12 |
+
+Test truth-cohort F0.5: zero-match 0.3333333333333333 over 3 queries, single-match
+0.6363636363636364 over 11, multi-match 0.9166666666666667 over 2. Prediction decision
+counts are separately zero 5, single 10, multi 1. Test totals are TP 10 / FP 2 / FN 5;
+truth ambiguity is deliberately retained rather than removed to improve metrics.
 
 False-negative precedence is RETRIEVAL, SCORING below .640, OWNERSHIP loss, DECODING
 mis-emission of an admissible owner. Genuine explicit label/data ambiguity is separate;
@@ -159,9 +201,12 @@ score-ineligible/out-of-graph emission is DECODING. This is policy-stage attribu
 not causal proof. The public fixture includes an explicit conflicting-label pair;
 ordinary mistakes are not automatically called ambiguous.
 
-Development FN counts were retrieval 1, scoring 2, ownership 1, explicit ambiguity 1,
+Clean test FN counts were retrieval 1, scoring 2, ownership 1, explicit ambiguity 1,
 decoding 0. Both FPs were scoring. DECODING is tested with a simulated emission defect;
 the historical baseline adds no set exclusion merely to manufacture a nonzero count.
+Examples: `test-miss` loses its truth at retrieval, `test-below` at scoring,
+`test-own-z` at ownership, `test-amb-z` has explicitly conflicting labels. False
+positives `test-own-a` and `test-phantom` receive admissible non-match scores.
 
 ## Resolution Evidence Capsule and lineage
 
@@ -172,6 +217,20 @@ Singleton rivals make the accepted-set minimum ownership margin undefined. No
 is_stable, counterfactual robustness or C4 stability study is implemented.
 Explain uses actual artifacts and at most five rejected competitor records.
 
+Actual clean capsule examples (identical between platforms):
+
+| S1 | Decision | Candidates | Top score | Minimum accepted lanes | Ownership / threshold margin |
+|---|---|---:|---:|---:|---|
+| test-empty | zero_match, empty set | 0 | None | None | None / None |
+| test-own-z | zero_match, empty set | 14 | 0.9998072758773955 | None | None / None |
+| test-q-000 | single_match, test-t-000 | 18 | 0.9998072758773955 | 5 | 0.9997946564090704 / 0.35980727587739547 |
+| test-multi | multi_match, test-multi-one/two | 14 | 0.9998072758773955 | 5 | 0.9997946564090704 / 0.35980727587739547 |
+
+The high-scoring zero-match illustrates ownership loss without conflating score
+with acceptance. `test-multi` has ambiguity ratio 1.0 and alternate-lane availability
+true, without assigning a stability label. Full identity fields are retained in
+the eight bundled platform examples and original evidence artifacts.
+
 All C3 bulk products have strict typed Parquet schemas. Schema/config/manifest/report
 metadata and capsules use canonical JSON. Artifact parents connect dataset,
 normalization, C2 graph/freeze, ordered features, mined labels, model, scores,
@@ -180,6 +239,36 @@ separate training/resolution/evaluation runs; content DAG validation preserves
 multiple producing observations of identical content. Consumed artifacts are hash-
 and size-checked. FAILED manifests use the original-exception-preserving validated
 Pass A failure path.
+
+## Reproducibility identities and smoke resources
+
+| Identity | SHA-256 |
+|---|---|
+| Full invented dataset | 9c65ea880f280c04f27a5a0e0d8a706ab361c2dc83766e2a6eeb1a33127fd8f0 |
+| Committed split plan | a05137bc525bd118687fd92daa7b2fc2297609be31b82fdacdc1f4b648f9ae9f |
+| Train split | 3e280d2192e188147aef7a3db698fd9019ad31eb40f9bfac45bd2805434242ed |
+| Calibration split | e07b2649d5e96bd8955f9537cafb4a3a9d1fc318f64803335dc3a6722178444c |
+| Test split | 9445e886b350632a0a3c71917fccbc8e346088a8e36568523358354a40a193d2 |
+| Retrieval configuration (explicit synthetic profile) | ba796fe2a90f2c2141bd548d3f8d26eab3f9b5f1a13787045ad2ffb68dd20940 |
+| Decoder configuration | 074e17bcdcd1687f88f050be540c4e7464c9ad87e7092192134a6d3a902ec46b |
+| Test bounded candidate graph | c27c5ed1546efe7e220aa757490d99e221976a7f12dcb647b6c80027bc15a922 |
+| Test logical scores (excluding model/path fields) | dd8d71a5b86ae492b5600902e28f47be9a2d88e4bfc2589af56448ef4c90cb7a |
+| Test resolution sets | 13ee550e045ab5b4cbf4e7e3acb9d2aa467b010e3c0747ee7c43ab516c717215 |
+
+All these identities matched across platforms. Within-platform model fits and
+score/set repeats matched. Both calibration/test logical score fingerprints matched
+exactly across these platform runs, as did set quality and attribution reports;
+calibration values also matched within 1e-12. This is an observed fixture result,
+not a universal LightGBM portability guarantee.
+
+| Clean test resolution | Wall seconds | CPU seconds | OS peak RSS bytes | End sampled RSS bytes | Artifact bytes |
+|---|---:|---:|---:|---:|---:|
+| Windows | 8.067018999994616 | 6.53125 | 185,069,568 | 184,020,992 | 103,497 |
+| Ubuntu WSL | 5.89211217299453 | 3.4354262139999996 | 229,765,120 | 230,825,984 | 103,497 |
+
+These are actual smoke observations, including stage artifact generation after
+parent/input verification. Separate OS RSS accounting snapshots can disagree;
+both are retained. They are not platform-speed comparisons or scale evidence.
 
 ## Verification and development failures
 
@@ -225,6 +314,15 @@ and LightGBM messages about no further positive-gain splits on small fixture dat
 Reproduction stderr logs retain model messages; no warning is hidden by unrelated
 configuration changes. Resource counters are stage smoke observations after input/
 parent verification, not throughput or isolated-memory benchmarks.
+Each clean fit emitted 600 no-further-positive-gain-split messages on each platform;
+these nonfatal messages remain in ignored stderr logs. Actual fitted tree count is
+600, and the complete suites pass.
+
+The final staged audit checked an exact 22-file implementation allowlist, UTF-8,
+credential patterns, file sizes under 1 MiB and protected-path/tag preservation.
+The evidence-only audit checks that its only files are this document and the new
+bundle, verifies retained instances against original output files, and proves no
+source drift from the producing commit. No private/binary/bulk artifacts are staged.
 
 ## Claim boundary and C4 prerequisites
 

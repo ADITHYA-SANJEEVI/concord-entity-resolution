@@ -1,6 +1,6 @@
 # PASS A EVIDENCE
 
-## Status and starting checkpoint
+## Original Pass A status and starting checkpoint
 
 **PASS — PUBLIC_PASS for C1 and C2.** C3 has not been started. No push was performed.
 
@@ -12,6 +12,58 @@ The historical freeze was read first, followed by the authoritative v1.1 amendme
 flagship specification, data contract, experiment/benchmark contract, and gated plan.
 Historical source was inspected for normalization, vectorizers, combined weighting,
 sampling, sparse top-N, reverse direction, rank indexing, and mask semantics.
+
+## Narrow closure: parity claim boundary
+
+Closure starting SHA: `3b39bab66ae16d613c746e76fb0bd93b07250d23`.
+Its working tree was clean. The legacy trees, historical manifests, and original six
+tests were unchanged against the original `812f0a3` checkpoint.
+
+**HISTORICAL PARAMETER / FUNCTION PARITY:** non-null normalization, vectorizer
+parameters, and five-view sparse function/reference behavior on uncapped fixtures
+are supported. Canonical seeded sampling is deterministic.
+
+**UNVERIFIED PRIVATE CAPPED-SAMPLE / FULL-GRAPH PARITY:** the preserved sampler uses
+historical q/t materialization order; new Concord sorts by `(source, entity_id)` before
+sampling, queries then targets. Above FIT_CAP=3,000,000, identical RNG positions do
+not prove equal sample membership. Historical capped membership and exact historical-scale
+candidate-graph parity have not been reproduced and are not claimed.
+
+The immutable `sampling_order_policy` (`concord.source-id.queries-then-targets.v1`)
+is fingerprinted in config/manifests and repeated in per-fit evidence with population,
+sample counts, cap status, and an explicit `UNVERIFIED` historical capped-parity field.
+Tests use the real numeric FIT_CAP boundary and the actual preserved sampler on an
+explicitly reduced-cap, synthetic reordered population. They demonstrate differing
+membership above the cap without inventing private order or calling self-comparison
+historical parity.
+
+Empty-vocabulary handling is the fingerprinted `concord.warn-empty-lane.v1` new
+Concord compatibility/fail-safe adapter. The preserved fitter raises; new Concord
+retains warnings and empty lanes. No DF relaxation or Cartesian fallback is added.
+This divergence is not exact legacy execution parity.
+
+The CLI validates `FAILED` manifests before their final write. Secondary validation
+or diagnostic-write failures are reported while preserving the original exception.
+Invalid snapshots are explicitly labelled and do not overwrite validated evidence.
+
+Closure verification: the complete Windows suite passed **109/109** in 87.68 seconds;
+the complete Ubuntu/WSL suite passed **109/109** in 91.98 seconds. This includes the
+original six unchanged tests and 103 new-contract tests, including 11 added closure
+cases. Ruff, compileall, `git diff --check`, and protected-path diff checks passed on
+the applicable platforms. The existing Windows pytest-asyncio configuration warning
+does not change the test result.
+
+Windows commands: `.venv/Scripts/python.exe -m pytest -q --tb=short`,
+`-m ruff check src/concord --exclude legacy_amazon tests scripts examples/synthetic/pass_a_fixture.py`,
+and `-m compileall -q src/concord tests scripts`.
+Ubuntu commands used the same arguments through `wsl -d Ubuntu --exec
+/var/tmp/concord-pass-a-closure-venv/bin/python`. Python versions remain Windows
+3.12.10 and Ubuntu 3.12.3.
+
+The implementation/document/test correction is committed first. Clean reproduction
+and its producing SHA will be recorded in a subsequent evidence-only commit. Until
+then, the bundle and measured results below are the original development evidence,
+with their original dirty-run provenance; no earlier manifest is relabelled clean.
 
 ## Implementation scope
 
@@ -29,7 +81,7 @@ The synthetic fixture profile is explicitly separate and never silently substitu
 for historical DF settings. No challenger, feature engine, training, ownership,
 decoder, evidence capsule, stability experiment, or C4 release benchmark is included.
 
-## Exact files changed
+## Original Pass A files changed
 
 ```text
 .github/workflows/pass-a.yml
@@ -191,7 +243,9 @@ measurement results above were completed while the `/tmp` environment existed.
 |---|---|---|
 | Views separate from normalization | Immutable RetrievalTextViews; ASCII-space compact parity; missingness flags | PASS |
 | Frozen five-view baseline | Exact vectorizer parameters; `(5,5,5,10,8)`; equal-weight combined; reverse direction | PASS |
-| Historical parity | AST-loaded preserved functions; real-text pair/similarity parity; explicit rank adapter | PASS |
+| Historical parameter/function/reference parity | AST-loaded preserved functions; uncapped real-text pair/similarity parity; explicit rank adapter | PASS |
+| Canonical capped sampling | Versioned source/ID order, population/cap evidence; preserved sampler order-boundary test | DETERMINISTIC; private capped membership/full graph UNVERIFIED |
+| Empty-vocabulary adapter | New Concord warns/emits empty lanes; preserved fitter raises | EXPLICIT DIVERGENCE |
 | Bounded sparse retrieval | Chunked sparse-dot-topn only; global degree bound; no Cartesian fallback | PASS |
 | Immutable per-lane provenance | One-based ranks; finite similarities; tuple evidence; validated mask | PASS |
 | No missing-rank sentinel | Absent evidence / null flat Parquet rank and similarity | PASS |
@@ -282,6 +336,9 @@ have zero changes. No private historical pipeline rerun was performed.
 - PUBLIC_PASS applies to the new C1/C2 contracts and P0 retrieval behavior. Private
   Amazon parity, leaderboard outcomes, WDC quality, and historical-scale resources
   have not been newly reproduced.
+- Private historical capped-sample membership and exact historical-scale candidate
+  graphs are unverified. Historical RNG positions alone do not establish membership
+  parity across canonical and historical materialization orders.
 - Historical evidence remains historical. The preserved leaderboard value and
   cross-script feature experiment are not new Pass A measurements.
 - The implementation holds entities and the bounded candidate union in memory.

@@ -63,13 +63,18 @@ IDs, and truths outside the eligible country universe are rejected. A label erro
 after graph generation produces a retained `FAILED` manifest and graph freeze.
 
 The default is `historical-five-view-v1`: budgets `(5,5,5,10,8)`, historical
-`min_df=2`, `max_df=0.05`, seed 0, fit cap 3,000,000. Name is `char_wb` trigrams,
+`min_df=2`, `max_df=0.05`, seed 0, fit cap 3,000,000. This is the historical
+parameter/reference baseline, with the explicitly versioned new Concord order and
+failure adapters described below. Name is `char_wb` trigrams,
 compact is character trigrams, address uses `[a-z0-9]+` word tokens. Combined stacks
 name and address vectors multiplied by float32 `sqrt(0.5)` without re-normalization.
 Reverse retrieves S1 neighbors from each target using the combined vectors.
 
 Tiny fixtures may yield empty historical vocabularies. Warnings are recorded, and
 those lanes are empty. There is no automatic cutoff relaxation or Cartesian fallback.
+This is the new Concord `concord.warn-empty-lane.v1` compatibility/fail-safe adapter,
+fingerprinted as `empty_vocabulary_policy`. Preserved `fit_transform()` raises on
+the same fitting error; the warning/empty lane is not exact legacy failure behavior.
 Use `--profile synthetic` explicitly for `synthetic-five-view-v1` (`min_df=1`,
 `max_df=1.0`). This is a fixture configuration, never a silently promoted historical
 baseline. `--config config.json` can select validated immutable parameters. Historical
@@ -102,6 +107,27 @@ No transliteration, adaptive-K, or other retrieval challenger is implemented.
 - All similarity products use chunked sparse top-N. Records and the bounded union
   are held in memory; this Pass A implementation does not claim historical-scale
   memory parity or disk-backed execution.
+
+## Historical parameter/function parity and sampling boundary
+
+`sampling_order_policy = "concord.source-id.queries-then-targets.v1"` is immutable
+and included in configuration fingerprints and manifests. Each country population
+is sorted by `(source, entity_id)`, with all S1 queries followed by S2/S3 targets.
+Fit evidence records that policy, population/sample counts, whether the cap applied,
+the selected identity fingerprint, and `historical_capped_sample_parity = "UNVERIFIED"`.
+
+Historical non-null `fold()` parity, vectorizer parameter parity, and five-lane sparse
+function/reference parity on uncapped fixtures are supported. Seeded sampling of
+canonical order is deterministic. The preserved sampler instead selects seeded
+positions in historical q/t materialization order. Above FIT_CAP=3,000,000, identical
+RNG positions need not identify identical records when those orders differ.
+
+**UNVERIFIED PRIVATE CAPPED-SAMPLE / FULL-GRAPH PARITY:** historical capped-sample
+membership has not been reproduced. Exact historical-scale candidate-graph parity
+is not claimed. No private row order is reconstructed and canonical ordering is
+retained. Tests exercise the real cap boundary with numeric positions and compare
+sample membership against the preserved sampler on an explicitly reduced-cap public
+fixture. That comparison demonstrates the order distinction, not private parity.
 
 ## Metric and evidence interpretation
 
@@ -137,6 +163,14 @@ identity; logical dataset, split, truth, and candidate identities are also retai
 Different runs/configurations may produce identical bytes and share a content DAG
 node while preserving separate producing observations. Timestamps, environment, and
 local paths never enter logical dataset/split fingerprints.
+
+Execution failures are marked `FAILED` and validated before final manifest writes.
+The original execution exception remains primary. If failure-manifest validation
+also fails, both errors are reported, `failed_manifest_errors.json` marks the evidence
+`INVALID`, and a serializable snapshot is saved as `manifest.failed.unvalidated.json`.
+It does not overwrite the last validated manifest. Diagnostic-write errors are
+reported separately without hiding the execution failure. Such snapshots are not
+valid completed-run evidence.
 
 ## Deferred
 

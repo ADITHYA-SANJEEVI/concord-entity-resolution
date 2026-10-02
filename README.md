@@ -54,7 +54,9 @@ Install with `python -m pip install -e ".[dev]"`, then run `python -m pytest -q`
 Run `python scripts/reproduce_pass_a.py --output outputs/pass-a-demo` to generate public
 retrieval reports, manifests, lineage, and frontier plots without private data.
 
-The default retrieval configuration preserves the historical five-view baseline.
+The default retrieval configuration preserves the historical five-view parameter/reference
+baseline. Canonical sampling order and the empty-vocabulary fail-safe adapter are explicit;
+private capped-sample membership and historical full-graph parity remain unverified.
 The separately named synthetic profile relaxes document-frequency cutoffs for tiny fixtures.
 See [Pass A usage and semantics](docs/PASS_A_USAGE.md) and [Pass A evidence](PASS_A_EVIDENCE.md).
 Scoring, ownership, decoding, and the later research gates are deferred.

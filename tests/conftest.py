@@ -1,4 +1,5 @@
 import ast
+import hashlib
 import runpy
 import unicodedata
 from pathlib import Path
@@ -21,7 +22,8 @@ def historical_functions():
     path = ROOT / "src/concord/legacy_amazon/frozen_full_graph_builder.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     selected = [node for node in tree.body if isinstance(node, ast.FunctionDef)
-                and node.name in ("fold", "vec", "retrieve", "commit")]
-    namespace = {"unicodedata": unicodedata, "np": np, "TfidfVectorizer": TfidfVectorizer}
+                and node.name in ("fold", "vec", "retrieve", "commit", "fit_transform", "sha_file")]
+    namespace = {"unicodedata": unicodedata, "np": np, "TfidfVectorizer": TfidfVectorizer,
+                 "hashlib": hashlib}
     exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), namespace)
     return namespace

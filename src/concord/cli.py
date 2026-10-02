@@ -118,6 +118,39 @@ def _metrics(report: dict, run_id: str, population: str) -> dict:
     return result
 
 
+def _record_failed_manifest(out: Path, manifest: dict, execution_error: Exception) -> None:
+    """Validate failure evidence without replacing the original execution exception."""
+    manifest["disposition"] = "FAILED"
+    manifest["evidence"]["notes"].append(f"{type(execution_error).__name__}: {execution_error}")
+    try:
+        validate_manifest(manifest)
+    except Exception as validation_error:
+        message = f"FAILED manifest validation also failed: {type(validation_error).__name__}: " \
+                  f"{validation_error}"
+        execution_error.add_note(message)
+        print(f"concord: {message}", file=sys.stderr)
+        try:
+            write_json(out / "failed_manifest_errors.json", {
+                "validation_status": "INVALID", "execution_error": str(execution_error),
+                "manifest_validation_error": str(validation_error),
+            })
+            # Explicitly unvalidated; never overwrite the last validated manifest.
+            write_json(out / "manifest.failed.unvalidated.json", manifest)
+        except Exception as write_error:
+            message = f"Failure diagnostics could not be written: {type(write_error).__name__}: " \
+                      f"{write_error}"
+            execution_error.add_note(message)
+            print(f"concord: {message}", file=sys.stderr)
+    else:
+        try:
+            write_json(out / "manifest.json", manifest)
+        except Exception as write_error:
+            message = f"FAILED manifest could not be written: {type(write_error).__name__}: " \
+                      f"{write_error}"
+            execution_error.add_note(message)
+            print(f"concord: {message}", file=sys.stderr)
+
+
 def _retrieve_command(args) -> dict:
     records = _inputs(args)
     config = _configuration(args)
@@ -239,9 +272,7 @@ def _retrieve_command(args) -> dict:
         write_json(out / "manifest.json", manifest)
         return report
     except Exception as exc:
-        manifest["disposition"] = "FAILED"
-        manifest["evidence"]["notes"].append(f"{type(exc).__name__}: {exc}")
-        write_json(out / "manifest.json", manifest)
+        _record_failed_manifest(out, manifest, exc)
         raise
 
 

@@ -2,6 +2,9 @@
 
 No labels enter retrieval. Sparse top-N is computed per country, in chunks.
 Reverse K bounds incoming edges per target, not outgoing edges per S1.
+Parameter/function parity on uncapped reference fixtures does not prove private
+historical capped-sample membership or full-graph parity. Sampling uses canonical
+order, whereas the preserved sampler uses historical materialization order.
 """
 
 import time
@@ -25,6 +28,8 @@ from concord.metadata import content_sha256, require_sha256
 from concord.storage import canonical_candidates
 
 HISTORICAL_K = (5, 5, 5, 10, 8)
+CANONICAL_SAMPLING_ORDER = "concord.source-id.queries-then-targets.v1"
+EMPTY_VOCABULARY_POLICY = "concord.warn-empty-lane.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,8 +43,14 @@ class RetrievalConfig:
     chunk_size: int = 250_000
     threads: int = 1
     lanes: tuple[str, ...] = LANES
+    sampling_order_policy: str = CANONICAL_SAMPLING_ORDER
+    empty_vocabulary_policy: str = EMPTY_VOCABULARY_POLICY
 
     def __post_init__(self) -> None:
+        if self.sampling_order_policy != CANONICAL_SAMPLING_ORDER:
+            raise ValueError("only canonical source/ID sampling order is supported")
+        if self.empty_vocabulary_policy != EMPTY_VOCABULARY_POLICY:
+            raise ValueError("only the warning/empty-lane compatibility adapter is supported")
         if self.profile not in ("historical-five-view-v1", "historical-budget-variant-v1",
                                 "synthetic-five-view-v1"):
             raise ValueError("unknown baseline/configuration profile; challengers are separate")
@@ -59,7 +70,7 @@ class RetrievalConfig:
         if self.profile != "synthetic-five-view-v1" and (
                 self.min_df != 2 or self.max_df != .05 or self.fit_cap != 3_000_000
                 or self.seed != 0):
-            raise ValueError("historical vectorizer/sampling semantics are frozen")
+            raise ValueError("historical vectorizer and sampler parameters are frozen")
         if self.profile == "historical-five-view-v1" and (
                 self.budgets != HISTORICAL_K or self.lanes != LANES):
             raise ValueError("baseline budgets/lanes are frozen; name budget variants explicitly")
@@ -84,6 +95,10 @@ class FitEvidence:
     vocabulary_size: int
     query_nnz: int
     target_nnz: int
+    population_count: int
+    cap_applied: bool
+    sampling_order_policy: str = CANONICAL_SAMPLING_ORDER
+    historical_capped_sample_parity: str = "UNVERIFIED"
 
     def __post_init__(self) -> None:
         if self.country is not None and not isinstance(self.country, str):
@@ -94,6 +109,22 @@ class FitEvidence:
         for count in (self.sample_count, self.vocabulary_size, self.query_nnz, self.target_nnz):
             if type(count) is not int or count < 0:
                 raise ValueError("fit counts must be nonnegative integers")
+        if type(self.population_count) is not int or self.population_count < self.sample_count:
+            raise ValueError("fit population must contain the selected sample")
+        if (type(self.cap_applied) is not bool
+                or self.cap_applied != (self.sample_count < self.population_count)):
+            raise ValueError("fit cap flag must agree with population/sample counts")
+        if self.sampling_order_policy != CANONICAL_SAMPLING_ORDER:
+            raise ValueError("fit evidence must identify canonical sampling order")
+        if self.historical_capped_sample_parity != "UNVERIFIED":
+            raise ValueError("private historical capped-sample parity has not been verified")
+
+
+def _fit_sample_positions(population_count: int, config: RetrievalConfig) -> np.ndarray:
+    """Positions in canonical queries-then-targets order, not private historical order."""
+    return (np.arange(population_count) if population_count <= config.fit_cap else
+            np.sort(np.random.default_rng(config.seed).choice(
+                population_count, size=config.fit_cap, replace=False)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -213,9 +244,7 @@ def retrieve(records: tuple[NormalizedEntity, ...],
         for view in ("name", "compact", "address"):
             qa, ta = [getattr(r, view) for r in qviews], [getattr(r, view) for r in tviews]
             text = qa + ta
-            selected = (np.arange(len(text)) if len(text) <= config.fit_cap else
-                        np.sort(np.random.default_rng(config.seed).choice(
-                            len(text), size=config.fit_cap, replace=False)))
+            selected = _fit_sample_positions(len(text), config)
             identities = [("S1", r.entity_id) for r in queries] + [
                 (r.source, r.entity_id) for r in targets]
             sample_hash = content_sha256([identities[int(i)] for i in selected])
@@ -227,6 +256,7 @@ def retrieve(records: tuple[NormalizedEntity, ...],
                         "empty vocabulary", "After pruning, no terms remain",
                         "max_df corresponds to < documents than min_df")):
                     raise
+                # New Concord fail-safe adapter: the preserved fit_transform raises.
                 # An explicit empty lane, never a relaxed-DF or all-pairs fallback.
                 warnings.append(f"country={country!r} view={view}: {exc}")
                 qm = sp.csr_matrix((len(queries), 0), dtype=np.float32)
@@ -237,7 +267,7 @@ def retrieve(records: tuple[NormalizedEntity, ...],
                 vocabulary = len(v.vocabulary_)
             matrices[view] = qm, tm
             fits.append(FitEvidence(country, view, sample_hash, len(selected), vocabulary,
-                                    qm.nnz, tm.nnz))
+                                    qm.nnz, tm.nnz, len(text), len(text) > config.fit_cap))
             rss = max(rss, process.memory_info().rss)
         weight = np.float32(np.sqrt(.5))
         matrices["combined"] = tuple(sp.hstack([

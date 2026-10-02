@@ -13,8 +13,11 @@ from concord.contracts import LANES, EntityRecord, LaneEvidence, RetrievalCandid
 from concord.normalization import normalize
 from concord.retrieval.analysis import candidate_fingerprint, evaluate_retrieval, frontier
 from concord.retrieval.baseline import (
+    CANONICAL_SAMPLING_ORDER,
+    EMPTY_VOCABULARY_POLICY,
     HISTORICAL_K,
     RetrievalConfig,
+    _fit_sample_positions,
     materialize_views,
     retrieve,
     synthetic_config,
@@ -252,7 +255,8 @@ def test_historical_sparse_retrieve_rank_adapter(historical_functions, tmp_path)
                 assert actual[key] == rank
 
 
-def test_historical_real_text_graph_parity(historical_functions):
+def test_historical_uncapped_reference_graph_parity(historical_functions):
+    """Function/reference parity only; this population never reaches FIT_CAP."""
     # 200 pairs keep each unique full-name/address term below historical max_df.
     rows = []
     for i in range(200):
@@ -309,3 +313,113 @@ def test_fit_sampling_repeatable(public_fixture):
     # Linux getrusage and psutil/statm use separate OS accounting snapshots.
     # Preserve both observed counters; neither is fabricated to order them.
     assert a.peak_process_rss_bytes > 0 and a.sampled_peak_rss_bytes > 0
+
+
+@pytest.mark.parametrize("offset", [-1, 0, 1])
+def test_actual_fit_cap_position_boundary(offset):
+    """Exercise the real 3M cutoff using positions only, without private records."""
+    config = RetrievalConfig()
+    population = config.fit_cap + offset
+    selected = _fit_sample_positions(population, config)
+    assert len(selected) == min(population, config.fit_cap)
+    assert np.all(np.diff(selected) > 0)
+    assert selected[0] >= 0 and selected[-1] < population
+    if offset <= 0:
+        assert np.array_equal(selected, np.arange(population))
+
+
+@pytest.mark.parametrize("population", [3, 4, 5])
+def test_capped_membership_order_boundary_against_preserved_sampler(
+        population, historical_functions, tmp_path):
+    """Public reduced-cap experiment on the preserved sampler, not private parity.
+
+    Equal seeded positions imply equal membership only if materialization order
+    matches (or all records are selected). Capture the actual preserved sample file.
+    The vectorizer stub isolates membership from vocabulary fitting.
+    """
+    class Volume:
+        def commit(self):
+            pass
+
+    class CaptureVectorizer:
+        vocabulary_ = {"public": 0}
+
+        def fit(self, text):
+            return self
+
+        def transform(self, text):
+            return sp.csr_matrix(np.ones((len(text), 1), dtype=np.float32))
+
+    q = [{"s1_id": key, "name": f"brand {key}", "address": "18 Main Road"}
+         for key in ("q-z", "q-a")]
+    t = [{"target_id": key, "name": f"brand {key}", "address": "18 Main Road"}
+         for key in ("t-z", "t-y", "t-x")[:population - len(q)]]
+    historical_functions.update({
+        "OUT": tmp_path, "MOUNT": tmp_path, "SEED": 0, "FIT_CAP": 4,
+        "vec": lambda view: CaptureVectorizer(),
+    })
+    historical_functions["fit_transform"](q, t, "name", "public", Volume())
+    sample = (tmp_path / "vectorizer_samples/public_name.txt").read_text().splitlines()
+    original_ids = ["q:" + row["s1_id"] for row in q] + ["t:" + row["target_id"] for row in t]
+    historical_positions = [original_ids.index(key) for key in sample]
+    rows = tuple(EntityRecord(row["s1_id"], "S1", row["name"], row["address"], "public")
+                 for row in q) + tuple(
+        EntityRecord(row["target_id"], "S2", row["name"], row["address"], "public") for row in t)
+    config = synthetic_config(fit_cap=4)
+    selected = _fit_sample_positions(population, config)
+    assert historical_positions == selected.tolist()
+    canonical = sorted(rows, key=lambda row: (row.source, row.entity_id))
+    canonical_sample = [canonical[int(i)] for i in selected]
+    historical_members = {key[2:] for key in sample}
+    canonical_members = {row.entity_id for row in canonical_sample}
+    if population > config.fit_cap:
+        assert historical_members != canonical_members
+    else:
+        assert historical_members == canonical_members
+    run = retrieve(tuple(normalize(row) for row in rows), config)
+    for evidence in run.fit_evidence:
+        assert evidence.population_count == population
+        assert evidence.cap_applied is (population > config.fit_cap)
+        assert evidence.sampling_order_policy == CANONICAL_SAMPLING_ORDER
+        assert evidence.historical_capped_sample_parity == "UNVERIFIED"
+        with pytest.raises(ValueError, match="has not been verified"):
+            replace(evidence, historical_capped_sample_parity="VERIFIED")
+        from concord.metadata import content_sha256
+
+        assert evidence.sample_fingerprint == content_sha256([
+            (row.source, row.entity_id) for row in canonical_sample])
+
+
+def test_sampling_and_fail_safe_policies_fingerprinted_and_immutable():
+    from concord.metadata import content_sha256
+
+    config = RetrievalConfig()
+    values = asdict(config)
+    assert values["sampling_order_policy"] == CANONICAL_SAMPLING_ORDER
+    assert values["empty_vocabulary_policy"] == EMPTY_VOCABULARY_POLICY
+    values.pop("sampling_order_policy")
+    assert config.fingerprint != content_sha256(values)
+    with pytest.raises(FrozenInstanceError):
+        config.sampling_order_policy = "historical-materialization"
+    with pytest.raises(ValueError):
+        replace(config, sampling_order_policy="historical-materialization")
+    with pytest.raises(ValueError):
+        replace(config, empty_vocabulary_policy="legacy-raise")
+
+
+def test_empty_vocabulary_is_new_fail_safe_not_legacy_execution(historical_functions, tmp_path):
+    class Volume:
+        def commit(self):
+            pass
+
+    historical_functions.update({"OUT": tmp_path, "MOUNT": tmp_path,
+                                 "SEED": 0, "FIT_CAP": 3_000_000})
+    q = [{"s1_id": "q", "name": "", "address": ""}]
+    t = [{"target_id": "t", "name": "", "address": ""}]
+    with pytest.raises(ValueError):
+        historical_functions["fit_transform"](q, t, "name", "public", Volume())
+    run = retrieve((normalize(EntityRecord("q", "S1", "", "", "public")),
+                    normalize(EntityRecord("t", "S2", "", "", "public"))))
+    assert run.candidates == () and len(run.warnings) == 3
+    assert run.config.empty_vocabulary_policy == EMPTY_VOCABULARY_POLICY
+    assert all(e.vocabulary_size == 0 for e in run.fit_evidence)

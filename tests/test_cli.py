@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from concord import cli
 from concord.identity import dataset_fingerprint
 from concord.metadata import (
     ArtifactLineage,
@@ -65,6 +66,11 @@ def test_retrieve_cli_manifest_freeze_and_lineage(action, public_fixture, tmp_pa
     assert manifest["evidence"]["class"] == "D"
     freeze = read_json(out / "retrieval_freeze.json")
     assert freeze["labels_accessed"] is False
+    policy = manifest["pipeline_configuration"]["retrieval"]["sampling_order_policy"]
+    assert policy == "concord.source-id.queries-then-targets.v1"
+    assert all(e["sampling_order_policy"] == policy
+               and e["historical_capped_sample_parity"] == "UNVERIFIED"
+               for e in freeze["fit_evidence"])
     candidates = read_candidates(out / "retrieval_candidates.parquet")
     assert len(candidates) == read_json(out / "report.json")["candidate_pairs"]
     lineage = []
@@ -127,3 +133,62 @@ def test_public_existing_tsv_paths():
 def test_later_gates_absent():
     for verb in ("train", "resolve", "evaluate", "benchmark"):
         assert invoke(verb).returncode == 2
+
+
+@pytest.mark.parametrize("secondary_failure", [None, "validation", "write"])
+def test_failure_evidence_preserves_original_exception(
+        secondary_failure, public_fixture, tmp_path, monkeypatch, capsys):
+    rows, _ = public_fixture
+    entities = tmp_path / "entities.parquet"
+    write_entities(entities, rows)
+    out = tmp_path / "failure"
+    args = cli.parser().parse_args([
+        "retrieve", "run", "--entities", str(entities), "--output", str(out),
+        "--profile", "synthetic", "--population", "P0/failure-test",
+        "--track", "SYNTHETIC_PUBLIC", "--run-id", "failure-test",
+    ])
+    original = RuntimeError("original retrieval failure")
+
+    def fail_retrieval(*args):
+        raise original
+
+    monkeypatch.setattr(cli, "retrieve", fail_retrieval)
+    validator = cli.validate_manifest
+    checked = []
+
+    def validate(instance):
+        checked.append(instance["disposition"])
+        if secondary_failure == "validation" and instance["disposition"] == "FAILED":
+            instance["configuration_fingerprint"] = "0" * 64
+        validator(instance)
+
+    monkeypatch.setattr(cli, "validate_manifest", validate)
+    writer = cli.write_json
+
+    def write(path, value):
+        if secondary_failure == "write" and value.get("disposition") == "FAILED":
+            raise OSError("diagnostic write failure")
+        writer(path, value)
+
+    monkeypatch.setattr(cli, "write_json", write)
+    with pytest.raises(RuntimeError) as caught:
+        cli._retrieve_command(args)
+    assert caught.value is original
+    assert "FAILED" in checked
+    if secondary_failure is None:
+        final = read_json(out / "manifest.json")
+        validate_manifest(final)
+        assert final["disposition"] == "FAILED"
+    else:
+        assert read_json(out / "manifest.json")["disposition"] == "RUNNING"
+        assert "FAILED manifest" in capsys.readouterr().err
+        assert original.__notes__
+        if secondary_failure == "validation":
+            errors = read_json(out / "failed_manifest_errors.json")
+            assert errors["validation_status"] == "INVALID"
+            assert errors["execution_error"] == str(original)
+            assert "fingerprint mismatch" in errors["manifest_validation_error"]
+            unvalidated = read_json(out / "manifest.failed.unvalidated.json")
+            assert unvalidated["disposition"] == "FAILED"
+            with pytest.raises(ValueError, match="fingerprint mismatch"):
+                validate_manifest(unvalidated)

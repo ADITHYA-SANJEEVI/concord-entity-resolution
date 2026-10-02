@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:concord:experiment:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "experiment_id", "timestamp_utc", "git", "provenance", "configuration_fingerprint", "pipeline_configuration", "metrics", "operational", "artifacts", "evidence", "disposition"],
+  "properties": {
+    "schema_version": {"const": "concord.experiment.v1"},
+    "experiment_id": {"type": "string", "minLength": 1},
+    "timestamp_utc": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"},
+    "git": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit_sha", "dirty"],
+      "properties": {"commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "dirty": {"type": "boolean"}}
+    },
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["dataset_fingerprint", "split_fingerprint", "dataset_track", "population"],
+      "properties": {
+        "dataset_fingerprint": {"$ref": "#/$defs/sha256"},
+        "split_fingerprint": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "dataset_track": {"enum": ["SYNTHETIC_PUBLIC", "PUBLIC", "PRIVATE_LOCAL"]},
+        "population": {"type": "string", "minLength": 1}
+      }
+    },
+    "configuration_fingerprint": {"$ref": "#/$defs/sha256"},
+    "pipeline_configuration": {"type": "object"},
+    "metrics": {"type": "object", "additionalProperties": {"$ref": "#/$defs/metric"}},
+    "operational": {"type": "object"},
+    "artifacts": {"type": "object", "additionalProperties": {"$ref": "#/$defs/artifact"}},
+    "evidence": {
+      "type": "object", "additionalProperties": false, "required": ["class", "notes"],
+      "properties": {"class": {"enum": ["A", "B", "C", "D", "E"]}, "notes": {"type": "array", "items": {"type": "string"}}}
+    },
+    "disposition": {"enum": ["PLANNED", "RUNNING", "COMPLETED", "FAILED", "INVALIDATED"]},
+    "promotion": {"enum": ["PROMOTED", "REJECTED", "DIAGNOSTIC_ONLY", "INCONCLUSIVE"]}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sha256", "bytes", "lineage"],
+      "properties": {
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 0},
+        "lineage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["artifact_sha256", "parent_sha256", "configuration_sha256", "code_commit", "schema_version", "stage", "evidence_class"],
+          "properties": {
+            "artifact_sha256": {"$ref": "#/$defs/sha256"},
+            "parent_sha256": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sha256"}},
+            "configuration_sha256": {"$ref": "#/$defs/sha256"},
+            "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "schema_version": {"type": "string", "minLength": 1},
+            "stage": {"type": "string", "minLength": 1},
+            "evidence_class": {"enum": ["A", "B", "C", "D", "E"]}
+          }
+        }
+      }
+    },
+    "metric": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "value", "population", "unit", "evidence_class", "producing_run"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "value": {"type": ["number", "null"]},
+        "population": {"type": "string", "minLength": 1},
+        "unit": {"type": "string", "minLength": 1},
+        "direction": {"enum": ["maximize", "minimize", "diagnostic"]},
+        "evidence_class": {"enum": ["A", "B", "C", "D", "E"]},
+        "producing_run": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

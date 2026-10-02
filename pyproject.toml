@@ -12,7 +12,19 @@ authors = [
   { name = "Asmi Balla" },
   { name = "Shreya Saha" },
 ]
-dependencies = []
+dependencies = [
+  "numpy==2.4.4",
+  "pyarrow==25.0.1",
+  "scipy==1.17.1",
+  "scikit-learn==1.8.0",
+  "sparse-dot-topn==1.2.0",
+  "psutil>=7.0,<8",
+  "jsonschema>=4.23,<5",
+  "matplotlib>=3.10,<4",
+]
+
+[project.scripts]
+concord = "concord.cli:main"
 
 [project.optional-dependencies]
 amazon = [
@@ -29,7 +41,7 @@ amazon = [
   "sparse-dot-topn==1.2.0",
   "psutil==7.0.0",
 ]
-dev = ["pytest>=8.0", "ruff>=0.8"]
+dev = ["pytest>=8.0", "ruff>=0.8", "pandas==3.0.2"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/concord"]
@@ -40,3 +52,10 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_manifests.py" = ["I001"]
+"tests/test_preserved_contract.py" = ["I001"]

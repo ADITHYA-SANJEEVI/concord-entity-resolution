@@ -44,7 +44,20 @@ The five retrieval views were normalized-name `char_wb` trigrams at top-5, compa
 - `archive_manifest/` identifies local artifacts, omitted large files, model hashes, and experiment directories.
 - `docs/EXPERIMENT_LEDGER.md` records promoted, rejected, diagnostic, and later experimental work.
 - `examples/synthetic/` contains invented records that document the input shape without redistributing organizer data.
-- `src/concord/{retrieval,features,modeling,inference,evaluation,utils}/` reserves clean package boundaries for future Concord work. These modules are scaffolding, not claims of completed functionality.
+- New Concord C1/C2 contracts, normalization, logical identities, Parquet IO, inspection, and bounded retrieval live outside `legacy_amazon`. The features, modeling, inference, and evaluation packages remain scaffolding for later gates.
+
+## Concord Pass A (C1 + C2)
+
+Install with `python -m pip install -e ".[dev]"`, then run `python -m pytest -q`.
+`concord inspect profile|schema|fingerprint` and
+`concord retrieve run|frontier|lane-rescue|ablate` work with synthetic inputs and typed Parquet.
+Run `python scripts/reproduce_pass_a.py --output outputs/pass-a-demo` to generate public
+retrieval reports, manifests, lineage, and frontier plots without private data.
+
+The default retrieval configuration preserves the historical five-view baseline.
+The separately named synthetic profile relaxes document-frequency cutoffs for tiny fixtures.
+See [Pass A usage and semantics](docs/PASS_A_USAGE.md) and [Pass A evidence](PASS_A_EVIDENCE.md).
+Scoring, ownership, decoding, and the later research gates are deferred.
 
 ## Reproducing the historical pipeline
 

@@ -1,5 +1,17 @@
 # PASS A EVIDENCE
 
+## Current closure status
+
+**PASS — PUBLIC_PASS; narrow Pass A closure complete.** C3 is not started. No push
+was performed. Closure started clean at `3b39bab66ae16d613c746e76fb0bd93b07250d23`.
+The producing implementation-closure commit is
+`98d4f1489ffb4eeccf83951ef1d53015a99d6213`. All 12 current public run manifests
+record this SHA and `dirty=false`. The evidence-only commit follows that producer.
+
+Historical parameter/function/reference parity remains supported on uncapped
+fixtures. Private historical capped-sample membership and historical-scale full-graph
+parity remain **UNVERIFIED**. This is public synthetic evidence, class D.
+
 ## Original Pass A status and starting checkpoint
 
 **PASS — PUBLIC_PASS for C1 and C2.** C3 has not been started. No push was performed.
@@ -60,10 +72,51 @@ Ubuntu commands used the same arguments through `wsl -d Ubuntu --exec
 /var/tmp/concord-pass-a-closure-venv/bin/python`. Python versions remain Windows
 3.12.10 and Ubuntu 3.12.3.
 
-The implementation/document/test correction is committed first. Clean reproduction
-and its producing SHA will be recorded in a subsequent evidence-only commit. Until
-then, the bundle and measured results below are the original development evidence,
-with their original dirty-run provenance; no earlier manifest is relabelled clean.
+The implementation/document/test correction was committed first at
+`98d4f1489ffb4eeccf83951ef1d53015a99d6213`. `git status --porcelain=v1` was empty
+before both public reproductions and after both completed. No tracked files were
+edited while the runs were executing. Only then were this document and the evidence
+bundle updated for the second commit.
+
+```powershell
+.venv\Scripts\python.exe scripts/reproduce_pass_a.py --output outputs/pass-a-closure-windows-clean
+wsl -d Ubuntu --exec /var/tmp/concord-pass-a-closure-venv/bin/python scripts/reproduce_pass_a.py --output outputs/pass-a-closure-linux-clean
+.venv\Scripts\python.exe tmp/collect_closure_evidence.py
+```
+
+The collector validated all 12 `COMPLETED` manifests, their clean producing SHA,
+configuration fingerprints/policies, fit population/cap metadata, frontier fit
+evidence, every physical artifact hash/size, and every recorded implementation
+source hash. All six paired candidate hashes match between platforms and match the
+previous development outputs. Config identities changed to include the explicit
+policies; candidate graphs did not change.
+
+The previous 568,496-byte dirty-run bundle is retained unchanged at
+`3b39bab66ae16d613c746e76fb0bd93b07250d23:docs/evidence/PASS_A_RUNS.json`, SHA-256
+`d2be622889f9b65563732c296ad0877b7f69e2135dcdb8ec105cf464c81eeb0d`.
+Its original instances still identify `812f0a3...` and `dirty=true`. The current
+bundle records a reference to that superseded development evidence; it contains
+new actual clean-run instances, with no relabelling of earlier runs.
+
+## Exact narrow-closure files changed
+
+```text
+PASS_A_EVIDENCE.md
+README.md
+docs/PASS_A_USAGE.md
+docs/evidence/PASS_A_RUNS.json
+src/concord/cli.py
+src/concord/retrieval/baseline.py
+tests/conftest.py
+tests/test_cli.py
+tests/test_retrieval.py
+```
+
+The first commit changes eight implementation/document/test files. The second changes
+only `PASS_A_EVIDENCE.md` and `docs/evidence/PASS_A_RUNS.json`. Protected-path diffs
+against the closure start are empty: historical source, historical manifests, and
+both original test files are unchanged. No private data, model weights, binary
+candidate/Parquet artifacts, or C3 implementation are committed.
 
 ## Implementation scope
 
@@ -114,7 +167,7 @@ tests/test_retrieval.py
 The original two test files, all `legacy_amazon` files, historical manifests,
 architecture bundle, and existing TSV fixtures are unchanged.
 
-## Verification commands
+## Original development verification commands
 
 All commands were executed from the repository unless a Linux path is explicit.
 Repeated commands below represent the same checks after fixes, rather than additional
@@ -161,7 +214,7 @@ git diff --check
 
 Temporary scripts and environments are ignored. `collect_evidence.py` validated
 all 12 retained manifests, each artifact's physical hash, and every recorded new-code
-source hash against the final implementation. It verified identical logical candidate
+source hash against the then-current implementation. It verified identical logical candidate
 hashes for all six paired Windows/Linux runs. `review_plot.py` rendered a PNG from the
 measured frontier; visual inspection led to grouping overlapping labels in legends.
 The generated SVGs and Parquet artifacts remain in the local output directories.
@@ -173,7 +226,7 @@ Ruff fixes were limited to new files. Existing test import-spacing findings were
 explicitly excluded to preserve the historical tests. No type checker is configured
 by the original repository; runtime validators, syntax compilation, and Ruff were run.
 
-## Complete test totals and retained failures
+## Complete test totals and retained development failures
 
 | Execution | Passed | Failed | Skipped | Result |
 |---|---:|---:|---:|---|
@@ -184,9 +237,12 @@ by the original repository; runtime validators, syntax compilation, and Ruff wer
 | Initial complete Linux suite | 97 | 1 | 0 | FAIL; corrected below |
 | Final complete Windows suite | 98 | 0 | 0 | PASS, 97.73 seconds |
 | Final complete Ubuntu WSL suite | 98 | 0 | 0 | PASS, 90.26 seconds |
+| Closure complete Windows suite | 109 | 0 | 0 | PASS, 87.68 seconds |
+| Closure complete Ubuntu WSL suite | 109 | 0 | 0 | PASS, 91.98 seconds |
 
-The final suite contains **6 preserved historical tests + 92 C1/C2 tests**, including
-parametrized cases. Both final platforms ran the entire repository suite.
+The original final suite contained **6 preserved historical tests + 92 C1/C2 tests**.
+The closure suite contains **6 preserved historical tests + 103 C1/C2 tests**, including
+parametrized cases. Both closure platforms ran the entire repository suite.
 
 The initial Windows failures were: duplicate content hashes in frontier lineage;
 a test trying to write illegal non-nullable Parquet; an incorrect synthetic missingness
@@ -215,7 +271,10 @@ These setup failures do not constitute Linux verification; the actual completed 
 After those completed tests, a further Ruff invocation found the ephemeral `/tmp`
 environment absent. Final Linux Ruff then passed using the repository-local standalone
 binary, and final Linux compileall passed with system Python. The successful suite and
-measurement results above were completed while the `/tmp` environment existed.
+original development measurements were completed while the `/tmp` environment existed.
+For this closure, the complete declared development environment was restored at
+`/var/tmp/concord-pass-a-closure-venv`; the closure suite, Ruff, compileall, and all
+six clean Linux reproduction runs completed using that environment.
 
 ## C1 acceptance matrix
 
@@ -261,17 +320,17 @@ measurement results above were completed while the `/tmp` environment existed.
 | Baseline/challenger separation | Baseline frozen; synthetic profile explicitly named; no challenger implemented | PASS |
 | WDC adapter/config if practical | No dataset or exact variant supplied; P0 used for public acceptance | DEFERRED, optional |
 
-## Actual measured retrieval results
+## Current clean-run measured retrieval results
 
 All values below come from executed runs in [PASS_A_RUNS.json](docs/evidence/PASS_A_RUNS.json).
 The bundle stores unmodified canonical manifest instances, reports, graph freezes,
 manifest identities, and local artifact-directory pointers. Binary data products are
 ignored in Git and reproducible from the committed invented fixture generator.
 
-Runs were executed before the implementation commit. Their producing Git SHA is
-the starting checkpoint and **dirty=true**, honestly identifying the uncommitted
-implementation. Per-module source hashes were recorded and verified against the
-final source. No manifest has been rewritten to claim execution from a later commit.
+These runs were executed after the implementation-closure commit, while clean.
+Every producing Git SHA is `98d4f1489ffb4eeccf83951ef1d53015a99d6213` and every
+manifest records **dirty=false**. Per-module source hashes were recorded and verified
+against that implementation. The old development instances remain in Git history.
 
 | Metric | P0 tiny fixture, synthetic profile | P0 strict historical-DF fixture |
 |---|---:|---:|
@@ -306,10 +365,10 @@ quality or efficiency advantage follows from this tiny corpus.
 
 | Platform / corpus | Retrieval wall seconds | CPU seconds | OS process peak RSS bytes | Sampled RSS bytes | Input / artifact bytes |
 |---|---:|---:|---:|---:|---:|
-| Windows / tiny | 0.05874920000496786 | 0.046875 | 166,707,200 | 165,986,304 | 2,993 / 18,297 |
-| Windows / strict historical DF | 0.09341380000114441 | 0.078125 | 167,309,312 | 167,018,496 | 6,808 / 22,695 |
-| Linux WSL / tiny | 0.056348867001361214 | 0.056310740999999886 | 237,834,240 | 238,702,592 | 2,993 / 18,297 |
-| Linux WSL / strict historical DF | 0.0781825040030526 | 0.07778859500000035 | 239,386,624 | 240,709,632 | 6,808 / 22,695 |
+| Windows / tiny | 0.09151070000370964 | 0.046875 | 166,875,136 | 166,154,240 | 2,993 / 19,704 |
+| Windows / strict historical DF | 0.09100159999798052 | 0.09375 | 167,600,128 | 167,305,216 | 6,808 / 23,169 |
+| Linux WSL / tiny | 0.10010603599948809 | 0.10033871999999988 | 200,314,880 | 201,322,496 | 2,993 / 19,704 |
+| Linux WSL / strict historical DF | 0.06494295499578584 | 0.06379895699999949 | 202,825,728 | 203,698,176 | 6,808 / 23,169 |
 
 Resource figures are smoke observations, not C4 scale benchmarks or platform-speed
 comparisons. RSS includes the interpreter and dependencies. Runtime covers retrieval,
@@ -317,11 +376,11 @@ not CLI startup, serialization, evaluation, plotting, or manifest generation.
 
 ## Platform and historical verification
 
-Native Windows: Windows 11 build 26200, Python 3.12.10, final 98/98 test pass;
+Native Windows: Windows 11 build 26200, Python 3.12.10, closure 109/109 test pass;
 Ruff and compileall passed; all public retrieval commands and repeated outputs succeeded.
 
 Linux: actual Ubuntu WSL2 execution, kernel `6.18.40.1-microsoft-standard-WSL2`,
-glibc 2.39, Python 3.12.3, final 98/98 test pass; Linux Ruff and compileall passed;
+glibc 2.39, Python 3.12.3, closure 109/109 test pass; Linux Ruff and compileall passed;
 all public retrieval commands and paired logical output hashes succeeded. This is
 Linux execution, not a claim that remote Ubuntu CI ran. Remote CI remains unexecuted
 until a future authorized push or manual workflow execution.
@@ -354,7 +413,7 @@ have zero changes. No private historical pipeline rerun was performed.
 - OS memory counters may differ transiently; frontier RSS includes earlier points in
   the same process. No isolated stage-memory or statistically robust timing claim.
 - Binary run artifacts, plots, temporary scripts, caches, and virtual environments
-  remain local and ignored; the committed 568,496-byte evidence file is metadata,
+  remain local and ignored; the committed 598,152-byte evidence file is metadata,
   not a generated dataset. Exact versions, hashes, warnings, and source identities
   are retained there. Reproduction regenerates the bulk artifacts.
 - No private data, credentials, secrets, model weights, or large generated datasets

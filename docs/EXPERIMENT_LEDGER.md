@@ -2,6 +2,10 @@
 
 This ledger preserves 24 meaningful experiment groups. It summarizes evidence without copying generated datasets, feature matrices, caches, or model weights. Paths refer to the original workspace at `C:\Users\adith\Downloads\6ab10eb3b23ba_student_resource`.
 
+Historical directory and filename tokens are opaque lookup identifiers, not current
+project attribution. They remain aligned with the frozen manifests; see the
+[closure inventory](audit/C3_CLOSURE_AUDIT.md#remaining-legacy-identifiers).
+
 ## Status key
 
 - PROMOTED: contributed to the preserved 0.955136 submission.

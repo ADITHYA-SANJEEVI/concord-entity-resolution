@@ -1,8 +1,10 @@
 # Proposed Data Contracts: Concord Core Types
 
 **Repository:** `concord-entity-resolution`  
-**Status:** PROPOSED ARCHITECTURAL SPECIFICATION (Frozen for Gates C1–C4).  
-*Note: These contracts define the target interface for new Concord modules. They are specifications, not claims of existing implementation.*
+**Status:** SUPERSEDED PROPOSAL. New Concord uses the authoritative
+[v1.1 data contract](../../Concord_Architecture_v1_1_AstraStyle/docs/audit/PROPOSED_DATA_CONTRACT_V1_1.md)
+and Architecture Amendment 001. The older examples below are historical design
+context, not the current implemented contracts or claims of implemented behavior.
 
 ---
 
@@ -92,7 +94,7 @@ class FeatureRow:
     target_id: str
     source: Literal["S2", "S3"]
     features: NDArray[np.float32]           # Exactly 59 float32 feature values
-    schema_version: str                     # E.g., 'asmi-crossscript-reproduced-59-v1'
+    schema_version: str                     # Frozen legacy ID: 'asmi-crossscript-reproduced-59-v1'; not the C3 schema
     schema_sha256: str                      # Hash of ordered feature schema definition
 
 

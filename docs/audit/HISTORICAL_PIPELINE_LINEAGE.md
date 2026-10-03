@@ -8,7 +8,7 @@
 
 ## 1. Architectural Lineage Overview
 
-The historical development of Concord (Team Aurorawave) did not proceed as a single static pipeline. The preserved evidence and experiment ledger document **three distinct, non-overlapping production pipeline architectures** (V1, V2, and V3). 
+The earlier Amazon ML Challenge 2026 entity-resolution work did not proceed as a single static pipeline. The preserved evidence and experiment ledger document **three distinct, non-overlapping production pipeline architectures** (V1, V2, and V3).
 
 Each pipeline generation tackled specific failure modes identified in its predecessor:
 - **V1:** Proved large-scale end-to-end viability using initial sparse blocking, HistGradientBoosting / hard-negative reranking, and calibrated thresholds.

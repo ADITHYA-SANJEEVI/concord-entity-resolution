@@ -5,7 +5,7 @@
 **Classification System:**
 - **Class A (Directly Verified):** Code + preserved artifact/schema/configuration in Git directly support the claim.
 - **Class B (Strongly Supported):** Reliable historical artifact, portal manifest, or output hash survives, but full re-execution from scratch is blocked by omitted private data or environment dependencies.
-- **Class C (Historical Context):** Documented in preserved experiment logs, notes, or team history, but secondary primary evidence in Git is partial or unrecovered.
+- **Class C (Historical Context):** Documented in preserved experiment logs, notes, or historical recollections, but secondary primary evidence in Git is partial or unrecovered.
 - **Class D (Newly Reproduced):** Reserved for new, controlled live reruns. *(Not used in this audit pass; no code was executed or modified).*
 - **Class E (Aspirational):** Future architecture, planned experiments, or design goals only.
 
@@ -42,7 +42,7 @@
 | **CLM-26** | Hybrid 63-feature experiment score | 0.95976645 | Macro F0.5 | POLICY_DEV split | `docs/EXPERIMENT_LEDGER.md:#14` | **C** | MEDIUM | Historical Only | Inconclusive bootstrap CI `[-0.00129, 0.00200]`; explicitly REJECTED. |
 | **CLM-27** | Distribution shift (France in test) | Uncalibrated at train time | Categorical split | Test set | `docs/FAILURE_ANALYSIS.md`, `frozen_full_graph_builder.py:18` | **C** | HIGH | Verified in code | Training code partitions only US/India; test code dynamically processes France. |
 | **CLM-28** | Production runtime and hardware profile | 32 workers, ~128 GB RAM, ~2.5 hrs | Resources | Production run | `README.md`, `docs/PIPELINE.md` | **C** | MEDIUM | Historical Only | Reported operational envelope for high-memory Linux instance. |
-| **CLM-29** | Later pipeline result ~0.966 | ~0.966 | Macro F0.5 | Historical recollection | None in Git | **C** | UNVERIFIED | Unrecovered | Team recollection from post-submission branches. NOT repository-backed. |
+| **CLM-29** | Later pipeline result ~0.966 | ~0.966 | Macro F0.5 | Historical recollection | None in Git | **C** | UNVERIFIED | Unrecovered | Historical recollection from post-submission branches. NOT repository-backed. |
 | **CLM-30** | Peak RAM ~2.9 GiB | ~2.9 GiB | RSS Memory | Candidate generation | None in Git | **C** | UNVERIFIED | Unrecovered | Mentioned in prompt context; not found in any committed file or log. |
 | **CLM-31** | Candidate volume 32.05M / 16.76M | ~32.05M raw / ~16.76M K=20 | Candidate Pairs | Intermediate experiment | None in Git | **C** | UNVERIFIED | Unrecovered | Unverified prompt recollection. Not in repository manifests. |
 | **CLM-32** | Resolution Certificate / Self-Auditing | Structurally complete proof object | Architecture | Future Concord | `docs/FUTURE_CONCORD_ROADMAP.md` | **E** | N/A | Aspirational | Roadmap and architecture proposal only. |

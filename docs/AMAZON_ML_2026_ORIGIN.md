@@ -2,7 +2,7 @@
 
 ## Origin
 
-Concord originated from Team Aurorawave's solution to the Amazon ML Challenge 2026 Business Entity Resolution task. The team members were Adithya Sanjeevi, Asmi Balla, and Shreya Saha.
+Concord evolved from earlier Amazon ML Challenge 2026 business entity-resolution work. The current Concord project is individually architected, implemented, tested and documented by Adithya Sanjeevi. The preserved challenge submission has separate historical provenance; this document does not assign sole authorship of that submission.
 
 The task provided a deduplicated Source 1 and two target collections, Source 2 and Source 3. For every Source-1 business, a system had to return zero, one, or many matching target identifiers. A target could not be assigned to multiple Source-1 owners in the final system. Performance was measured with macro F0.5, which weights precision more heavily than recall.
 

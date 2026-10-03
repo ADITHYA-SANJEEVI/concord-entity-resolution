@@ -1,10 +1,72 @@
 # Concord
 
-Concord is a multilingual business entity-resolution project. It began as Team Aurorawave's solution to the Amazon ML Challenge 2026 Business Entity Resolution task and is being preserved as a reproducible engineering project.
+Concord resolves noisy multilingual business records into zero, one or many target
+matches, with reproducible evidence for retrieval, scoring and each final decision.
+It is an individual project architected, implemented, tested and documented by
+**Adithya Sanjeevi**. Concord evolved from earlier Amazon ML Challenge 2026
+entity-resolution work; the challenge submission's historical provenance is
+preserved separately.
 
-The repository's first baseline is historical. It records the exact source behavior, feature order, model configuration, decision policy, results, artifact identities, and experiment history associated with the submitted system. It does not include organizer datasets, generated candidate graphs, final TSV outputs, or the trained model.
+Entity resolution is difficult because names and addresses vary across languages,
+scripts, punctuation and missing fields. Similar names can describe different
+businesses, several target records can represent the same business, and competing
+source records can claim the same target. Comparing every possible pair also becomes
+impractical as the target universe grows.
 
-## Verified Amazon baseline
+## Architecture
+
+```text
+Validated records + deterministic normalization
+  → bounded five-view sparse retrieval
+  → ordered 59-feature reference engine
+  → LightGBM scoring
+  → global target ownership: score DESC, s1_id ASC
+  → fixed decoder: owner AND score ≥ 0.640
+  → zero / one / many matches + compact evidence + evaluation
+```
+
+The retrieval views cover name, compact name, address, combined name/address and
+reverse combined retrieval. Features consume only the bounded candidate graph.
+Scoring, ownership, dispositions and resolution sets have separate immutable
+contracts. Typed Parquet stores bulk products; canonical JSON records configurations,
+reports, artifact hashes and parent identities. Failure attribution identifies
+policy stages, while evidence capsules retain raw diagnostics with undefined values
+represented explicitly.
+
+## Public reproduction
+
+Requires Python 3.12 or later. New Concord code runs on native Windows and Linux.
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest -q
+python scripts/reproduce_pass_a.py --output outputs/pass-a-demo
+python scripts/reproduce_pass_b.py --output outputs/pass-b-demo
+```
+
+Pass A covers contracts, normalization, identities and bounded retrieval. Pass B
+adds features, retrieval-derived hard negatives, training, calibration, resolution,
+set evaluation and evidence using invented, entity-disjoint train/calibration/test
+splits. The current CLI exposes `inspect`, `retrieve`, `train`, `resolve` and
+`evaluate` with gated subcommands.
+
+Pass B recorded **189 passing tests on each of native Windows and Ubuntu/WSL**.
+Clean reproductions retained 18 completed manifests per platform; logical scores,
+resolution sets and evaluation reports matched for the synthetic fixture. Its test
+macro set F0.5 was **0.6145833333333334**, including intentional failure cases.
+These observations describe the fixture, not general model or benchmark performance.
+
+See [Pass A usage](docs/PASS_A_USAGE.md), [Pass B usage](docs/PASS_B_USAGE.md),
+[Pass A evidence](PASS_A_EVIDENCE.md), [Pass B evidence](PASS_B_EVIDENCE.md) and the
+[C3 closure audit](docs/audit/C3_CLOSURE_AUDIT.md). The
+[Windows/Ubuntu CI workflow](.github/workflows/public-verification.yml) configures
+tests and both reproductions; configured CI is not evidence of remote execution.
+
+## Preserved historical baseline
+
+The earlier challenge pipeline resolved **1.73M source entities against a 9.97M
+target universe using bounded multi-view retrieval that produced an 87.9M-pair
+candidate graph**. The graph was a bounded subset of possible comparisons.
 
 | Item | Verified value |
 |---|---:|
@@ -15,103 +77,27 @@ The repository's first baseline is historical. It records the exact source behav
 | Frozen candidate pairs | 87,934,151 |
 | Accepted links | 5,708,382 |
 | Empty Source-1 output rows | 100,939 |
-| Training candidate rows | 3,376,945 |
-| Model inputs | 59 float32 features |
 
-The leaderboard value is supported by preserved portal evidence and user-confirmed submission chronology. The remaining counts and development metric are supported by local manifests, reports, output hashes, and validator evidence. See [Results](docs/RESULTS.md) and [Provenance](docs/PROVENANCE.md).
+These are historical observations supported by preserved artifacts and submission
+chronology, not newly reproduced C3 results or current live leaderboard verification.
+[Results](docs/RESULTS.md), [Provenance](docs/PROVENANCE.md) and the
+[experiment ledger](docs/EXPERIMENT_LEDGER.md) describe their evidence and limits.
 
-## Historical architecture
+`src/concord/legacy_amazon/` remains frozen historical authority, including the
+ordered schema and model configuration. `archive_manifest/` preserves original
+source, artifact and experiment identities. Historical replay requires privately
+supplied organizer data/model files and high-memory Linux or WSL2; see
+[Reproducibility](docs/REPRODUCIBILITY.md). New implementation lives outside that
+legacy boundary.
 
-```mermaid
-flowchart LR
-    A[Organizer S1, S2, S3 TSVs] --> B[Country-partitioned normalization]
-    B --> C[Five sparse TF-IDF retrieval views]
-    C --> D[Unioned candidate graph]
-    D --> E[55 string, numeric, rank, and graph-context features]
-    E --> F[4 cross-script features]
-    F --> G[59-feature LightGBM]
-    G --> H[Global target ownership]
-    H --> I[S2 and S3 threshold 0.64]
-    I --> J[Deterministic matching and candidate TSVs]
-```
+## Claim and redistribution boundaries
 
-The five retrieval views were normalized-name `char_wb` trigrams at top-5, compact-name character trigrams at top-5, address word unigrams at top-5, an equal-weight name/address view at top-10, and reverse combined retrieval at top-8.
+Git excludes private organizer data, model weights, generated candidate/feature
+tables, submission outputs, caches and environments. Public function/schema tests
+do not establish private feature, model, probability or capped-sampling parity.
+No WDC performance, historical-scale throughput, leaderboard improvement or
+stability finding is claimed. C4 research and release work remain deferred.
 
-## Repository map
-
-- `src/concord/legacy_amazon/` preserves the exact verified Amazon-era Python source.
-- `src/concord/legacy_amazon/artifacts/` preserves the exact ordered schema and model configuration.
-- `archive_manifest/` identifies local artifacts, omitted large files, model hashes, and experiment directories.
-- `docs/EXPERIMENT_LEDGER.md` records promoted, rejected, diagnostic, and later experimental work.
-- `examples/synthetic/` contains invented records that document the input shape without redistributing organizer data.
-- New Concord C1/C2/C3 contracts, bounded retrieval, reference features/scoring, ownership, decoding and evaluation live outside `legacy_amazon`.
-
-## Concord Pass A (C1 + C2)
-
-Install with `python -m pip install -e ".[dev]"`, then run `python -m pytest -q`.
-`concord inspect profile|schema|fingerprint` and
-`concord retrieve run|frontier|lane-rescue|ablate` work with synthetic inputs and typed Parquet.
-Run `python scripts/reproduce_pass_a.py --output outputs/pass-a-demo` to generate public
-retrieval reports, manifests, lineage, and frontier plots without private data.
-
-The default retrieval configuration preserves the historical five-view parameter/reference
-baseline. Canonical sampling order and the empty-vocabulary fail-safe adapter are explicit;
-private capped-sample membership and historical full-graph parity remain unverified.
-The separately named synthetic profile relaxes document-frequency cutoffs for tiny fixtures.
-See [Pass A usage and semantics](docs/PASS_A_USAGE.md) and [Pass A evidence](PASS_A_EVIDENCE.md).
-Pass A evidence remains the accepted C1/C2 checkpoint.
-
-## Concord Pass B (C3)
-
-Run `python scripts/reproduce_pass_b.py --output outputs/pass-b-demo` for the invented
-entity-disjoint training/calibration/test pipeline. C3 implements ordered 59-feature
-reference extraction, retrieval-derived hard negatives, LightGBM, deterministic global
-ownership, the frozen 0.640 decoder, set quality, policy-stage attribution and compact
-resolution evidence. The gated `train`, `resolve` and `evaluate` CLI surfaces are available.
-See [Pass B usage](docs/PASS_B_USAGE.md) and [Pass B evidence](PASS_B_EVIDENCE.md).
-Public function/reference parity does not establish private model/feature/probability
-parity. C4 challengers, benchmark and stability research remain deferred.
-
-## Reproducing the historical pipeline
-
-The preserved implementation requires Linux or WSL2 because its feature stage uses the `fork` multiprocessing start method. The historical production profile used 32 workers, about 128 GB RAM, at least 35 GB of temporary disk, and roughly 2.5 hours on comparable hardware.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[amazon]"
-python -m concord.legacy_amazon.run_pipeline \
-  --train /data/dataset/train \
-  --test /data/dataset/test \
-  --work-dir /scratch/concord-amazon-2026 \
-  --output /scratch/concord-output \
-  --workers 32
-```
-
-This command also requires the two verified trained-model files to be supplied privately. They are intentionally omitted because redistribution rights for a model trained on organizer data are not established. See [Reproducibility](docs/REPRODUCIBILITY.md).
-
-## What is not in Git
-
-The repository excludes organizer data, final submission outputs, candidate and feature matrices, caches, SQLite databases, Parquet datasets, model weights, virtual environments, and the 523 MB submission ZIP. Their important hashes, sizes, schemas, counts, roles, and regeneration notes are preserved in machine-readable manifests.
-
-## Historical integrity
-
-The submitted output is identified by these hashes:
-
-```text
-Aurorawave_submission.zip  d0574aab454f2e4798986ed5b488411bd04937b27ac6a9c17601235d4f07618e
-matching_results.tsv       0153c2ad53f0cfbecce5339075968588d131d3144f6c85c49bb2a5a05741d145
-candidate_pairs.tsv        709164321b318e89763b37277dbcb2e96e40ccdcec93091bfe96c01a6e30a526
-```
-
-The original files remain outside this repository and were not modified during preservation.
-
-## Team
-
-- Adithya Sanjeevi
-- Asmi Balla
-- Shreya Saha
-
-## License status
-
-No open-source license is attached to this historical import. Ownership and redistribution terms for challenge-derived code and artifacts require review. Absence of a license means no permission is granted beyond rights provided by applicable law.
+No open-source license is attached. Challenge-derived code and artifact
+redistribution terms require review; absence of a license grants no additional
+permission beyond applicable rights.

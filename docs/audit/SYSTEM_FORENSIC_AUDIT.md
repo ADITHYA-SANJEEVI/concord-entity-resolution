@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary & Verdict
 
-Concord began as Team Aurorawave's solution to the Amazon ML Challenge 2026 Business Entity Resolution task (Adithya Sanjeevi, Asmi Balla, Shreya Saha). The preserved baseline at commit `1133bfd` contains approximately 2,100 lines of verified production Python, authoritative schemas, serializations, cryptographic manifests, and a 24-experiment ledger.
+Concord evolved from earlier Amazon ML Challenge 2026 business entity-resolution work. The current project is individually architected, implemented, tested and documented by Adithya Sanjeevi; the earlier challenge submission retains its separate historical provenance. The preserved baseline at commit `1133bfd` contains approximately 2,100 lines of verified production Python, authoritative schemas, serializations, cryptographic manifests, and a 24-experiment ledger.
 
 The system addresses large-scale multilingual entity resolution:
 > **Scale Summary:** Resolving 1,732,544 Source-1 (S1) query business entities against a target universe of approximately 9,969,589 valid Source-2 (S2) and Source-3 (S3) target records. Through bounded multi-view sparse retrieval, the pipeline reduced an enormous potential Cartesian comparison space into a bounded candidate graph of 87,934,151 pairs, scored each candidate with a 59-feature LightGBM model, enforced deterministic global target ownership, and applied a fixed threshold of 0.64.

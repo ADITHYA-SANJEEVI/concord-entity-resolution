@@ -2,17 +2,21 @@
 
 Use this document to keep public claims within the preserved evidence.
 
+Concord is Adithya Sanjeevi's individual project. Describe the earlier challenge
+submission as historical provenance; these records do not establish sole authorship
+of that external submission. Historical metrics are not newly reproduced C3 results.
+
 | Claim | Status | Evidence | Safe resume wording |
 |---|---|---|---|
-| Amazon ML Challenge 2026 origin | VERIFIED | Submission package, methodology, and lineage records | Built a business entity-resolution system for Amazon ML Challenge 2026 with Team Aurorawave. |
-| Public Macro F0.5 of 0.955136 | VERIFIED | Portal evidence and confirmed submission chronology | Achieved 0.955136 public Macro F0.5. |
+| Amazon ML Challenge 2026 origin | VERIFIED | Submission package, methodology, and lineage records | Concord evolved from earlier Amazon ML Challenge 2026 entity-resolution work. |
+| Public Macro F0.5 of 0.955136 | VERIFIED | Portal evidence and confirmed submission chronology | Preserved the earlier submission's historical public Macro F0.5 of 0.955136. |
 | 1,732,544 Source-1 rows | VERIFIED | Frozen outputs and official validator | Produced deterministic results for 1.73 million Source-1 records. |
 | 9,969,589 target IDs | VERIFIED | Official validator with ID checking | Matched against a 9.97 million-record S2/S3 target universe. |
 | 87,934,151 candidate pairs | VERIFIED | Graph and score manifests | Built and scored an 87.9 million-pair candidate graph. |
 | 59 float32 features | VERIFIED | Ordered schema and model structure | Engineered a fixed 59-feature pair and graph-context schema. |
 | Cross-script and transliteration handling | VERIFIED | Four feature definitions and selected qualification | Added four transliteration and script-aware features to the selected model. |
 | Five-view sparse blocking | VERIFIED | Frozen retrieval source and pipeline reconstruction | Combined five country-partitioned sparse TF-IDF retrieval views. |
-| LightGBM classifier | VERIFIED | Model config, schema, text-model metadata, and source | Trained and deployed a 59-feature LightGBM classifier. |
+| LightGBM classifier | VERIFIED | Model config, schema, text-model metadata, and source | Preserved the historical 59-feature LightGBM configuration; implemented the current public reference scorer. |
 | Global ownership policy | VERIFIED | Frozen finalizer and schema contract | Enforced one global Source-1 owner per target using deterministic score ordering. |
 | Deterministic output | VERIFIED | Sorting rules, hashes, and equality checks | Implemented deterministic ownership, tie-breaking, and output ordering. |
 | Artifact validation | VERIFIED | Official validator, stream scan, and hash manifests | Added hash, schema, row-alignment, ID-membership, and subset validation. |

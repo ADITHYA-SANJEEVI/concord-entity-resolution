@@ -338,3 +338,16 @@ drift, Failure Atlas, scale measurements and release gates. Nothing in this pass
 starts that work. Replay and unfinished C4 CLI surfaces remain unexposed.
 
 Usage and conventions: [PASS_B_USAGE.md](docs/PASS_B_USAGE.md).
+
+## Targeted closure audit
+
+The follow-up [C3 closure audit](docs/audit/C3_CLOSURE_AUDIT.md) starts from
+`ff7abafc0494cab53803d02beecc383df4128ccd`. It reviews C3 semantics and current public
+project attribution. Concord is individually architected, implemented, tested and
+documented by Adithya Sanjeevi; earlier challenge provenance remains historical.
+The closure changes documentation, package author metadata and the workflow filename.
+C3 source, tests, fixtures, configurations and the clean-run bundle remain unchanged.
+The workflow is now `.github/workflows/public-verification.yml`, with identical
+commands. Earlier file lists above describe their producing commits accurately.
+The recorded full-suite totals and reproduction identities above remain Pass B
+observations; closure validation is reported separately in the linked audit.

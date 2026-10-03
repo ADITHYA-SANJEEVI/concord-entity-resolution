@@ -1,7 +1,10 @@
 # Proposed Experiment Contract & Stability Protocol
 
 **Repository:** `concord-entity-resolution`  
-**Status:** SPECIFICATION FROZEN FOR IMPLEMENTATION.
+**Status:** SUPERSEDED PROPOSAL. New experiments use the authoritative
+[v1.1 experiment contract](../../Concord_Architecture_v1_1_AstraStyle/docs/audit/PROPOSED_EXPERIMENT_AND_BENCHMARK_CONTRACT_V1_1.md).
+The example below is an older illustrative template, not an executed run or measured
+result. Its legacy schema identifier is retained as a reference to the frozen artifact.
 
 ---
 
@@ -14,7 +17,7 @@ Every Concord experiment—whether a retrieval ablation, a new feature set, a th
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "experiment_id": "exp-20261015-multiview-retrieval-v2",
   "timestamp": "2026-10-15T18:24:00Z",
-  "author": "Concord Team",
+  "author": "Adithya Sanjeevi",
   "git": {
     "commit_sha": "1133bfda496e2be59623fe154ec3dac45c13361f",
     "branch": "main",

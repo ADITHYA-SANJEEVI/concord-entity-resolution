@@ -9,8 +9,6 @@ description = "A reproducible multilingual entity-resolution project with a pres
 requires-python = ">=3.12"
 authors = [
   { name = "Adithya Sanjeevi" },
-  { name = "Asmi Balla" },
-  { name = "Shreya Saha" },
 ]
 dependencies = [
   "numpy==2.4.4",

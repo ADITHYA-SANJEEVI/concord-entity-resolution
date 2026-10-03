@@ -93,7 +93,7 @@
   ],
   "ownership": "global target winner by score DESC then s1_id ASC",
   "prediction": "LGBMClassifier.predict_proba(X)[:, 1]",
-  "serialization": "UTF-8 canonical JSON; sorted keys; compact separators; no trailing newline",
+  "serialization": "UTF-8 JSON; sorted keys; two-space indentation; LF; trailing newline",
   "threshold": 0.64,
   "version": "concord.reference-baseline.59.v1"
 }

@@ -42,13 +42,15 @@ python -m pip install -e ".[dev]"
 python -m pytest -q
 python scripts/reproduce_pass_a.py --output outputs/pass-a-demo
 python scripts/reproduce_pass_b.py --output outputs/pass-b-demo
+python scripts/reproduce_pass_c.py --output outputs/pass-c-demo
 ```
 
 Pass A covers contracts, normalization, identities and bounded retrieval. Pass B
 adds features, retrieval-derived hard negatives, training, calibration, resolution,
 set evaluation and evidence using invented, entity-disjoint train/calibration/test
-splits. The current CLI exposes `inspect`, `retrieve`, `train`, `resolve` and
-`evaluate` with gated subcommands.
+splits. Pass C adds a bounded research suite and measured public scale workloads.
+The current CLI exposes `inspect`, `retrieve`, `train`, `resolve`, `evaluate` and
+`benchmark` with gated subcommands.
 
 Pass B recorded **189 passing tests on each of native Windows and Ubuntu/WSL**.
 Clean reproductions retained 18 completed manifests per platform; logical scores,
@@ -56,11 +58,20 @@ resolution sets and evaluation reports matched for the synthetic fixture. Its te
 macro set F0.5 was **0.6145833333333334**, including intentional failure cases.
 These observations describe the fixture, not general model or benchmark performance.
 
+Pass C recorded **215 passing tests on each platform**, 12 diagnostic experiments,
+six input perturbations and scale measurements at 128, 512 and 2,048 source queries.
+Its invented multilingual test fixture had 133 queries: reference macro set F0.5
+was **0.842105**, versus **0.864662** for logistic regression, whose paired interval
+included zero. No challenger was promoted. Clean runs verified 446 artifacts per
+platform; final sets and logical failure attribution matched. Small logistic
+probability differences were retained separately from those logical outcomes.
+
 See [Pass A usage](docs/PASS_A_USAGE.md), [Pass B usage](docs/PASS_B_USAGE.md),
-[Pass A evidence](PASS_A_EVIDENCE.md), [Pass B evidence](PASS_B_EVIDENCE.md) and the
+[Pass C usage](docs/PASS_C_USAGE.md), [Pass A evidence](PASS_A_EVIDENCE.md),
+[Pass B evidence](PASS_B_EVIDENCE.md), [Pass C evidence](PASS_C_EVIDENCE.md) and the
 [C3 closure audit](docs/audit/C3_CLOSURE_AUDIT.md). The
 [Windows/Ubuntu CI workflow](.github/workflows/public-verification.yml) configures
-tests and both reproductions; configured CI is not evidence of remote execution.
+tests and all three reproductions; configured CI is not evidence of remote execution.
 
 ## Preserved historical baseline
 
@@ -79,7 +90,7 @@ candidate graph**. The graph was a bounded subset of possible comparisons.
 | Empty Source-1 output rows | 100,939 |
 
 These are historical observations supported by preserved artifacts and submission
-chronology, not newly reproduced C3 results or current live leaderboard verification.
+chronology, not newly reproduced C1-C4 results or current live leaderboard verification.
 [Results](docs/RESULTS.md), [Provenance](docs/PROVENANCE.md) and the
 [experiment ledger](docs/EXPERIMENT_LEDGER.md) describe their evidence and limits.
 
@@ -95,8 +106,10 @@ legacy boundary.
 Git excludes private organizer data, model weights, generated candidate/feature
 tables, submission outputs, caches and environments. Public function/schema tests
 do not establish private feature, model, probability or capped-sampling parity.
-No WDC performance, historical-scale throughput, leaderboard improvement or
-stability finding is claimed. C4 research and release work remain deferred.
+Pass C quality, robustness and scale observations apply only to its invented P0
+workloads. No WDC performance, historical-scale throughput, production throughput
+or leaderboard improvement is claimed. Independent external validation and future
+read-only inspection surfaces remain separate work; no frontend or API is included.
 
 No open-source license is attached. Challenge-derived code and artifact
 redistribution terms require review; absence of a license grants no additional

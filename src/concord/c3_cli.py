@@ -332,7 +332,7 @@ def evaluate_command(args):
         failure_summary = failure_report(failures, args.population)
         expected_dispositions, expected_decisions = decode(ownership, queries)
         if expected_dispositions != dispositions or expected_decisions != decisions:
-            raise ValueError("recorded output violates frozen historical decoder")
+            raise ValueError("recorded output violates frozen reference decoder")
         policy = {"threshold": .640, "population": args.population, "ownership_exclusive": True,
                   "accepted_iff_owner_and_admissible": True, "additional_set_policy": None,
                   "target_contention_count": sum(n > 1 for n in Counter(o.target_id for o in ownership).values()),

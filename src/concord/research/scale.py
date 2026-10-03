@@ -159,7 +159,7 @@ def run_scale(args):
         _write(run.out / "observations.parquet", [asdict(o) for o in observations], SCALE_SCHEMA)
         run.artifact("observations.parquet", "scale-measurement", "concord.c4.scale-observation.v1", tuple(a["sha256"] for a in run.manifest["artifacts"].values()))
         output = {"schema_version": "concord.c4.scale-summary.v1", "workloads": summaries, "configuration": config,
-                  "environment": run.manifest["operational"]["environment"], "warning": "Current invented public workloads only; no production/historical-scale or controlled cross-platform speed claim."}
+                  "environment": run.manifest["operational"]["environment"], "warning": "Current invented public workloads only; no production/reference-scale or controlled cross-platform speed claim."}
         run.json("summary.json", output, "scale-summary", tuple(a["sha256"] for a in run.manifest["artifacts"].values()))
         run.complete({"workload_count": len(sizes), "observation_count": len(observations)})
         return output

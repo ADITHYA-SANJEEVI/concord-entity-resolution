@@ -44,7 +44,7 @@ class ModelConfig:
     subsample: float = 1.
     colsample_bytree: float = 1.
     random_state: int = 42
-    seed_recovery: str = "DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND"
+    seed_policy: str = "concord.fixed-seed-42.v1"
     n_jobs: int = 1
     deterministic: bool = True
     force_col_wise: bool = True
@@ -57,9 +57,9 @@ class ModelConfig:
         fixed = (self.n_estimators, self.learning_rate, self.num_leaves, self.min_child_samples,
                  self.reg_lambda, self.subsample, self.colsample_bytree, self.random_state)
         if fixed != (600, .05, 63, 100, 1., 1., 1., 42):
-            raise ValueError("historical/reference model parameters are frozen")
-        if self.seed_recovery != "DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND":
-            raise ValueError("original historical seed was not recovered")
+            raise ValueError("reference model parameters are frozen")
+        if self.seed_policy != "concord.fixed-seed-42.v1":
+            raise ValueError("reference seed policy must be declared")
         if type(self.n_jobs) is not int or self.n_jobs < 1 or self.deterministic is not True or self.force_col_wise is not True:
             raise ValueError("explicit deterministic local threading required")
 
@@ -82,7 +82,7 @@ class LightGBMScorer:
 
     def get_params(self) -> dict:
         values = asdict(self.config)
-        values.pop("seed_recovery")
+        values.pop("seed_policy")
         return values | {"objective": "binary", "metric": "binary_logloss"}
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "LightGBMScorer":

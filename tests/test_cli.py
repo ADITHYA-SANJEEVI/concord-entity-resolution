@@ -69,7 +69,7 @@ def test_retrieve_cli_manifest_freeze_and_lineage(action, public_fixture, tmp_pa
     policy = manifest["pipeline_configuration"]["retrieval"]["sampling_order_policy"]
     assert policy == "concord.source-id.queries-then-targets.v1"
     assert all(e["sampling_order_policy"] == policy
-               and e["historical_capped_sample_parity"] == "UNVERIFIED"
+               and e["reference_capped_sample_parity"] == "UNVERIFIED"
                for e in freeze["fit_evidence"])
     candidates = read_candidates(out / "retrieval_candidates.parquet")
     assert len(candidates) == read_json(out / "report.json")["candidate_pairs"]

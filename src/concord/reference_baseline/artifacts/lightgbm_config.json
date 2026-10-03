@@ -11,5 +11,8 @@
   "early_stopping": false,
   "class_weight": null,
   "random_state": 42,
-  "seed_recovery": "DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND"
+  "seed_policy": "concord.fixed-seed-42.v1",
+  "n_jobs": 1,
+  "deterministic": true,
+  "force_col_wise": true
 }

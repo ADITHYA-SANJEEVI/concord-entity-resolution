@@ -1,7 +1,7 @@
 # Concord Pass A usage and semantics
 
-Only C1 and C2 are implemented. The v1.1 bundle is authoritative for new contracts;
-the preserved Amazon source and historical manifests remain unchanged.
+This guide covers implemented C1 contracts and C2 retrieval. C3 resolution and
+C4 research are documented in the other usage guides.
 
 ## Installation and public reproduction
 
@@ -20,8 +20,8 @@ empty: previous results and failed manifests are retained.
 
 The reproduction script executes an invented 9-query/12-target fixture through all
 C2 CLI surfaces, repeats its candidate hash, and separately runs a 200-query/200-target
-invented corpus with the strict historical configuration. These are P0 synthetic
-measurements, not Amazon or WDC results. Every quality report has a run manifest.
+invented corpus with the strict reference configuration. These are P0 synthetic
+measurements of the declared invented fixtures. Every quality report has a run manifest.
 
 ## Inspect
 
@@ -62,31 +62,31 @@ also has undefined recall, not a fabricated perfect score. `frontier` requires l
 IDs, and truths outside the eligible country universe are rejected. A label error
 after graph generation produces a retained `FAILED` manifest and graph freeze.
 
-The default is `historical-five-view-v1`: budgets `(5,5,5,10,8)`, historical
-`min_df=2`, `max_df=0.05`, seed 0, fit cap 3,000,000. This is the historical
+The default is `reference-five-view-v1`: budgets `(5,5,5,10,8)`, reference
+`min_df=2`, `max_df=0.05`, seed 0, fit cap 3,000,000. This is the reference
 parameter/reference baseline, with the explicitly versioned new Concord order and
 failure adapters described below. Name is `char_wb` trigrams,
 compact is character trigrams, address uses `[a-z0-9]+` word tokens. Combined stacks
 name and address vectors multiplied by float32 `sqrt(0.5)` without re-normalization.
 Reverse retrieves S1 neighbors from each target using the combined vectors.
 
-Tiny fixtures may yield empty historical vocabularies. Warnings are recorded, and
+Tiny fixtures may yield empty reference vocabularies. Warnings are recorded, and
 those lanes are empty. There is no automatic cutoff relaxation or Cartesian fallback.
 This is the new Concord `concord.warn-empty-lane.v1` compatibility/fail-safe adapter,
-fingerprinted as `empty_vocabulary_policy`. Preserved `fit_transform()` raises on
-the same fitting error; the warning/empty lane is not exact legacy failure behavior.
+fingerprinted as `empty_vocabulary_policy`. Reference `fit_transform()` raises on
+the same fitting error; the warning/empty lane is not exact reference failure behavior.
 Use `--profile synthetic` explicitly for `synthetic-five-view-v1` (`min_df=1`,
-`max_df=1.0`). This is a fixture configuration, never a silently promoted historical
-baseline. `--config config.json` can select validated immutable parameters. Historical
-K/lane variants use `historical-budget-variant-v1`; they keep frozen vectorizer settings.
+`max_df=1.0`). This is a fixture configuration, never a silently promoted reference
+baseline. `--config config.json` can select validated immutable parameters. Reference
+K/lane variants use `reference-budget-variant-v1`; they keep frozen vectorizer settings.
 No transliteration, adaptive-K, or other retrieval challenger is implemented.
 
 ## Contract adapters and bounds
 
-- Non-null normalization is the exact historical NFKD / combining-mark removal /
+- Non-null normalization is the exact reference NFKD / combining-mark removal /
   casefold sequence. `None` stays `None`. The version includes the Unicode database
   identity, so a different interpreter's Unicode database is not silently equivalent.
-- Compact names remove ASCII spaces only, matching preserved retrieval; tabs and
+- Compact names remove ASCII spaces only, matching reference retrieval; tabs and
   newlines are not stripped. Compact is a retrieval view, not base normalization.
 - Missing text maps to an empty vectorizer input only in retrieval, with explicit
   missingness flags. Raw and normalized Parquet tables preserve it.
@@ -96,7 +96,7 @@ No transliteration, adaptive-K, or other retrieval challenger is implemented.
   cutoff ties use the pinned library on canonical input order. Selected hits are
   ranked by similarity descending then neighbor ID ascending. No claim is made that
   top-N cutoff ties select the globally lexicographically smallest neighbor.
-- Historical ranks are zero-based; the new API adds one. Missing lane evidence is
+- Reference ranks are zero-based; the new API adds one. Missing lane evidence is
   absent (Parquet null), never a magic sentinel. Mask bits remain `1,2,4,8,16`.
 - Entity identity is `(source, entity_id)`. Because the frozen candidate key is
   `(s1_id, target_id)`, target IDs shared between S2 and S3 are rejected explicitly;
@@ -105,28 +105,28 @@ No transliteration, adaptive-K, or other retrieval challenger is implemented.
   `Q * (K_name + K_compact + K_address + K_combined) + T * K_reverse`, capped by
   the eligible Cartesian size. Reverse does not impose a per-S1 degree cap.
 - All similarity products use chunked sparse top-N. Records and the bounded union
-  are held in memory; this Pass A implementation does not claim historical-scale
+  are held in memory; this Pass A implementation does not claim reference-scale
   memory parity or disk-backed execution.
 
-## Historical parameter/function parity and sampling boundary
+## Reference parameter/function parity and sampling boundary
 
 `sampling_order_policy = "concord.source-id.queries-then-targets.v1"` is immutable
 and included in configuration fingerprints and manifests. Each country population
 is sorted by `(source, entity_id)`, with all S1 queries followed by S2/S3 targets.
 Fit evidence records that policy, population/sample counts, whether the cap applied,
-the selected identity fingerprint, and `historical_capped_sample_parity = "UNVERIFIED"`.
+the selected identity fingerprint, and `reference_capped_sample_parity = "UNVERIFIED"`.
 
-Historical non-null `fold()` parity, vectorizer parameter parity, and five-lane sparse
+Reference non-null `fold()` parity, vectorizer parameter parity, and five-lane sparse
 function/reference parity on uncapped fixtures are supported. Seeded sampling of
-canonical order is deterministic. The preserved sampler instead selects seeded
-positions in historical q/t materialization order. Above FIT_CAP=3,000,000, identical
+canonical order is deterministic. The reference sampler instead selects seeded
+positions in reference q/t materialization order. Above FIT_CAP=3,000,000, identical
 RNG positions need not identify identical records when those orders differ.
 
-**UNVERIFIED PRIVATE CAPPED-SAMPLE / FULL-GRAPH PARITY:** historical capped-sample
-membership has not been reproduced. Exact historical-scale candidate-graph parity
+**UNVERIFIED PRIVATE CAPPED-SAMPLE / FULL-GRAPH PARITY:** reference capped-sample
+membership has not been reproduced. Exact reference-scale candidate-graph parity
 is not claimed. No private row order is reconstructed and canonical ordering is
 retained. Tests exercise the real cap boundary with numeric positions and compare
-sample membership against the preserved sampler on an explicitly reduced-cap public
+sample membership against the reference sampler on an explicitly reduced-cap public
 fixture. That comparison demonstrates the order distinction, not private parity.
 
 ## Metric and evidence interpretation
@@ -171,12 +171,3 @@ also fails, both errors are reported, `failed_manifest_errors.json` marks the ev
 It does not overwrite the last validated manifest. Diagnostic-write errors are
 reported separately without hiding the execution failure. Such snapshots are not
 valid completed-run evidence.
-
-## Deferred
-
-WDC adapters and measurements are deferred because no WDC dataset or exact variant
-has been supplied. Private historical probability/output parity is unexecuted.
-C3 requires the 59-feature reference engine and parity fixtures, retrieval-derived
-negative protocol, separate scoring/ownership/disposition contracts, scorer training,
-calibration, deterministic global ownership, historical threshold policy, quality
-evaluation, stage attribution, and evidence capsules. None is implemented by Pass A.

@@ -31,7 +31,7 @@ class DecoderConfig:
     def __post_init__(self):
         if (self.threshold != .640 or self.decoder_version != DECODER_VERSION
                 or self.ownership_policy != "score DESC, s1_id ASC; global target population"):
-            raise ValueError("historical ownership/decoder policy is frozen")
+            raise ValueError("reference ownership/decoder policy is frozen")
 
     @property
     def sha256(self):

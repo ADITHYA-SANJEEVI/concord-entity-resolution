@@ -39,22 +39,22 @@ def main() -> None:
     same = first["candidate_fingerprint"] == repeat["candidate_fingerprint"]
     if not same:
         raise AssertionError("synthetic logical candidates changed across identical runs")
-    hrecords, htruth = fixtures["historical_fixture"]()
-    write_entities(out / "historical/inputs/entities.parquet", hrecords)
-    write_json(out / "historical/inputs/truth.json", htruth)
+    hrecords, htruth = fixtures["reference_fixture"]()
+    write_entities(out / "reference/inputs/entities.parquet", hrecords)
+    write_json(out / "reference/inputs/truth.json", htruth)
     cmd = [sys.executable, "-m", "concord", "retrieve", "run",
-           "--entities", str(out / "historical/inputs/entities.parquet"),
-           "--truth", str(out / "historical/inputs/truth.json"), "--profile", "historical",
-           "--output", str(out / "historical/run"),
-           "--population", "P0/pass-a-historical-df-fixture-v1/all-queries",
-           "--track", "SYNTHETIC_PUBLIC", "--run-id", "pass-a-p0-historical"]
+           "--entities", str(out / "reference/inputs/entities.parquet"),
+           "--truth", str(out / "reference/inputs/truth.json"), "--profile", "reference",
+           "--output", str(out / "reference/run"),
+           "--population", "P0/pass-a-reference-df-fixture-v1/all-queries",
+           "--track", "SYNTHETIC_PUBLIC", "--run-id", "pass-a-p0-reference"]
     subprocess.run(cmd, check=True, capture_output=True)
-    historical = read_json(out / "historical/run/report.json")
+    reference = read_json(out / "reference/run/report.json")
     summary = {"population": first["population"], "candidate_hash_repeat_equal": same,
                "candidate_fingerprint": first["candidate_fingerprint"],
                "reports": {action: f"{action}/report.json" for action in reports},
-               "historical_report": "historical/run/report.json",
-               "historical_metrics": {key: historical[key] for key in (
+               "reference_report": "reference/run/report.json",
+               "reference_metrics": {key: reference[key] for key in (
                    "queries", "targets", "candidate_pairs", "eligible_cartesian_pairs",
                    "truth_pairs", "truths_recovered", "truth_pair_recall", "reduction_ratio",
                    "density", "zero_candidate_queries", "zero_candidate_rate",

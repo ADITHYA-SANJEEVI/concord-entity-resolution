@@ -17,9 +17,9 @@ def public_fixture():
 
 
 @pytest.fixture
-def historical_functions():
-    """Execute selected preserved definitions without importing the private pipeline."""
-    path = ROOT / "src/concord/legacy_amazon/frozen_full_graph_builder.py"
+def reference_functions():
+    """Execute selected reference definitions without importing the private pipeline."""
+    path = ROOT / "src/concord/reference_baseline/retrieval.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     selected = [node for node in tree.body if isinstance(node, ast.FunctionDef)
                 and node.name in ("fold", "vec", "retrieve", "commit", "fit_transform", "sha_file")]

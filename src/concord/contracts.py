@@ -8,7 +8,7 @@ Source = Literal["S1", "S2", "S3"]
 RetrievalLane = Literal["name", "compact", "address", "combined", "reverse"]
 LANES: tuple[RetrievalLane, ...] = ("name", "compact", "address", "combined", "reverse")
 ENTITY_VERSION = "concord.entity.v1"
-VIEWS_VERSION = "concord.retrieval-text.historical.v1"
+VIEWS_VERSION = "concord.retrieval-text.reference.v1"
 
 
 def require_id(value: str) -> None:

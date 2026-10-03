@@ -87,7 +87,7 @@ def _environment() -> dict:
     package = Path(__file__).resolve().parent
     source_hashes = {path.relative_to(package).as_posix(): sha256_file(path)
                      for path in sorted(package.rglob("*"))
-                     if path.suffix in (".py", ".json") and "legacy_amazon" not in path.parts}
+                     if path.suffix in (".py", ".json")}
     return {"python": platform.python_version(), "os": platform.platform(),
             "cpu": platform.processor() or platform.machine(),
             "available_ram_bytes": psutil.virtual_memory().available,
@@ -234,8 +234,8 @@ def _retrieve_command(args) -> dict:
             for index, k in enumerate(budgets):
                 values = asdict(config)
                 values["budgets"], values["lanes"] = (k,) * 5, config.lanes
-                if config.profile == "historical-five-view-v1":
-                    values["profile"] = "historical-budget-variant-v1"
+                if config.profile == "reference-five-view-v1":
+                    values["profile"] = "reference-budget-variant-v1"
                 variant = RetrievalConfig(**values)
                 vrun = retrieve(normalized, variant)
                 filename = f"frontier_{index}_candidates.parquet"
@@ -293,8 +293,8 @@ def parser() -> argparse.ArgumentParser:
             else:
                 command.add_argument("--output", required=True)
                 command.add_argument("--truth", help="JSON array of [s1_id,target_id] truth pairs")
-                command.add_argument("--profile", choices=("historical", "synthetic"),
-                                     default="historical")
+                command.add_argument("--profile", choices=("reference", "synthetic"),
+                                     default="reference")
                 command.add_argument("--config", help="explicit immutable retrieval config JSON")
                 command.add_argument("--population", required=True, help="exact split/variant label")
                 command.add_argument("--track", choices=("SYNTHETIC_PUBLIC", "PUBLIC", "PRIVATE_LOCAL"),

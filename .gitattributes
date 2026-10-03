@@ -1,5 +1,5 @@
 * text=auto eol=lf
 
-# Historical source and artifact contracts must keep byte-stable LF endings.
-src/concord/legacy_amazon/*.py text eol=lf
-src/concord/legacy_amazon/artifacts/*.json text eol=lf
+# Reference source and artifact contracts must keep byte-stable LF endings.
+src/concord/reference_baseline/*.py text eol=lf
+src/concord/reference_baseline/artifacts/*.json text eol=lf

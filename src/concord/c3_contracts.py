@@ -7,10 +7,10 @@ from typing import Literal
 from concord.contracts import require_id
 from concord.metadata import require_sha256
 
-FEATURE_VERSION = "concord.features.historical-59.v1"
+FEATURE_VERSION = "concord.features.reference-59.v1"
 MODEL_VERSION = "concord.lightgbm.reference.v1"
 OWNERSHIP_VERSION = "concord.ownership.score-desc-id-asc.v1"
-DECODER_VERSION = "concord.decoder.historical-0640.v1"
+DECODER_VERSION = "concord.decoder.reference-0640.v1"
 ATTRIBUTION_VERSION = "concord.attribution.earliest-policy-stage.v1"
 DecisionType = Literal["zero_match", "single_match", "multi_match"]
 FailureStage = Literal["RETRIEVAL", "SCORING", "OWNERSHIP", "DECODING",
@@ -64,7 +64,7 @@ class FeatureRow:
     def __post_init__(self) -> None:
         pair(self.s1_id, self.target_id)
         if type(self.values) is not tuple or len(self.values) != 59:
-            raise ValueError("historical reference requires 59 immutable ordered values")
+            raise ValueError("reference schema requires 59 immutable ordered values")
         for value in self.values:
             finite(value)
         if self.schema_version != FEATURE_VERSION:
@@ -149,14 +149,14 @@ class CandidateDisposition:
         boolean(self.is_owner)
         boolean(self.accepted)
         if self.threshold != .640 or self.decoder_version != DECODER_VERSION:
-            raise ValueError("historical decoder is frozen at 0.640")
+            raise ValueError("reference decoder is frozen at 0.640")
         finite(self.threshold_margin)
         if abs(self.threshold_margin - (self.score - self.threshold)) > 1e-12:
             raise ValueError("threshold margin mismatch")
         expected = self.is_owner and self.score >= self.threshold
         reason = "NONE" if expected else "BELOW_THRESHOLD" if self.score < self.threshold else "LOST_OWNERSHIP"
         if self.accepted != expected or self.rejection_reason != reason:
-            raise ValueError("disposition violates historical acceptance/rejection policy")
+            raise ValueError("disposition violates reference acceptance/rejection policy")
 
 
 @dataclass(frozen=True, slots=True)

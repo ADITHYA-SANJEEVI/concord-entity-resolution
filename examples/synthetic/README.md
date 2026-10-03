@@ -1,3 +1,6 @@
-# Synthetic example
+# Synthetic fixtures
 
-These tiny records demonstrate the expected tab-separated input shape. They are invented and do not contain organizer data. They are not large enough to exercise production retrieval or model scoring.
+All records are invented and publicly distributable. TSV files demonstrate the
+input adapter. Pass A/B generators exercise contracts and resolution. C4's generated
+multilingual recipe and committed split plan exercise research and scale surfaces.
+They do not establish quality or capacity on independent real-world data.

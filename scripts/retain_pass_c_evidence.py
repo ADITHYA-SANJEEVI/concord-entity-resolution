@@ -92,7 +92,7 @@ def retain(windows, linux, output):
         raise ValueError("platform robustness decisions differ")
     bundle = {"schema_version": "concord.pass-c-evidence.v1", "evidence_class": "D", "platforms": retained,
               "cross_platform_observations": comparison, "robustness_change_queries_equal": True,
-              "claim_boundary": "Observed invented P0 fixture only; no general model-binary portability, historical/private parity, WDC quality, production throughput or automatic promotion."}
+              "claim_boundary": "Observed invented P0 fixture only; no general model-binary portability, reference/private parity, WDC quality, production throughput or automatic promotion."}
     write_json(output, bundle)
     return bundle
 

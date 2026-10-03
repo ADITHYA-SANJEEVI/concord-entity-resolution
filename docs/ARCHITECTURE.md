@@ -1,46 +1,40 @@
-# Architecture
+# Concord architecture
 
-## System boundary
+C1 owns typed entity, normalization, split, experiment and artifact contracts.
+C2 builds a bounded sparse graph without labels. C3 computes features, fits a
+scorer, arbitrates ownership, emits match sets, and evaluates them. C4 executes
+diagnostic experiments against those same policy boundaries.
 
-The historical pipeline accepts organizer TSV directories and produces two TSVs: one with the full candidate set per Source-1 record and one with accepted matches. It performs no external business lookup, geocoding, registry query, or web search.
+Entities preserve raw text, source and country. NFKD/casefold normalization
+distinguishes null from empty. Retrieval adapters materialize name, compact name,
+address and equal-weight combined TF-IDF representations; reverse search uses
+the combined view. Canonical source/ID ordering precedes seeded fit sampling.
+Empty vocabularies produce recorded empty lanes. Country is an eligibility key.
 
-## Retrieval
+The default `reference-five-view-v1` profile fixes budgets (5,5,5,10,8), min_df=2,
+max_df=0.05 and a 3,000,000-record vectorizer fit cap. `synthetic-five-view-v1`
+uses min_df=1/max_df=1 for small invented fixtures. Reverse K is per target.
 
-Retrieval runs independently by country. Names and addresses use Unicode NFKD decomposition, combining-mark removal, and case folding. Query and target text jointly fit deterministic TF-IDF vectorizers from a seed-0 sample capped at 3,000,000 records per country and view.
+Features use the declared vectorizer fit population and coordinate-only cosine
+products. All 59 columns have immutable names, definitions and order. Graph context
+includes query/source rank, target rank, best-score deltas, rival margins and counts.
+The four cross-script features use raw text with Unidecode and Unicode script names.
 
-| View | Representation | Depth |
-|---|---|---:|
-| Name | `char_wb` trigrams | 5 |
-| Compact name | spaces removed, character trigrams | 5 |
-| Address | `[a-z0-9]+` word unigrams | 5 |
-| Combined | separately L2-normalized name and address, equal weight | 10 |
-| Reverse combined | targets query Source 1 | 8 |
+LightGBM requests 600 trees, learning_rate=0.05, num_leaves=63,
+min_child_samples=100, reg_lambda=1, full row/column sampling, seed 42, deterministic
+column-wise fitting and one thread. Actual tree count and trained model bytes are
+recorded. Ownership selects score DESC/query ID ASC; threshold 0.640 applies only
+to owners. Every query receives a sorted unique target set, including the empty set.
 
-Vectorizers use float32, `min_df=2`, `max_df=0.05`, sublinear term frequency, smoothed IDF, and L2 normalization. Sparse top-K multiplication avoids a full Cartesian similarity matrix. The five outputs are unioned on `(s1_id, target_id)`.
+Bulk evidence is versioned Parquet. JSON manifests describe physical artifacts,
+logical identities and parent DAGs. Scoring, ownership, disposition, resolution,
+evaluation and failure attribution remain separate artifacts. Verification checks
+bytes and declared lineage before downstream consumption.
 
-## Features
+`reference_baseline` contains independent numerical functions exercised by parity
+tests, not a second CLI pipeline. They preserve vectorizer, sampler, rank, SQL-window
+and cross-script semantics. Tests explicitly exercise materialization-order and
+empty-vocabulary differences from current Concord behavior.
 
-The 55 base features cover normalized name and address similarity, numeric agreement, exact TF-IDF cosine values, retrieval ranks, query and target rank context, rival margins, candidate counts, and target competition.
-
-The additional four features are:
-
-- `f55`: transliterated-name character-trigram Jaccard.
-- `f56`: maximum RapidFuzz ratio across original and transliterated name combinations.
-- `f57`: dominant-script difference indicator.
-- `f58`: transliterated-address token Jaccard.
-
-All 59 inputs are float32 and must follow the exact order in `ordered_59_feature_schema.json`.
-
-## Model
-
-The classifier is `LGBMClassifier` with 600 estimators, learning rate 0.05, 63 leaves, minimum 100 samples per child, L2 regularization 1, full row and column sampling, and random seed 42. Training used 3,376,945 labeled candidate rows, no class weights, and no early stopping.
-
-## Decision policy
-
-The model emits pair probabilities. Before thresholding, every S2 or S3 target is assigned to the S1 record with the highest score. Equal scores are resolved by ascending `s1_id`. A probability threshold of 0.64 is then applied to both sources.
-
-Accepted targets within each Source-1 row are ordered by score descending, then target ID ascending. Candidate IDs are ordered by target ID. All Source-1 rows are emitted, including empty match rows.
-
-## Historical and future boundaries
-
-Files under `src/concord/legacy_amazon/` are the historical implementation and should not be silently refactored. New implementations belong in the neighboring Concord modules and should be compared against the frozen contracts before replacing any historical behavior.
+See [C1–C2](PASS_A_USAGE.md), [C3](PASS_B_USAGE.md), and [C4](PASS_C_USAGE.md)
+for precise API and evaluation semantics.

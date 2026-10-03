@@ -32,12 +32,12 @@ from concord.storage import (
 @pytest.mark.parametrize("text", ["", "Café", "Cafe\u0301", "Straße", "İstanbul", "ＡＢＣ",
                                   "मैसूर टेक्सटाइल्स", "東京", "العربية", " a\t b \n", "Åﬃ",
                                   "NULL", "nan", "None", "Å & Co., Ltd.", "🙂"])
-def test_nonnull_historical_fold_parity(text, historical_functions):
-    assert normalize_text(text) == historical_functions["fold"](text)
+def test_nonnull_reference_fold_parity(text, reference_functions):
+    assert normalize_text(text) == reference_functions["fold"](text)
 
 
-def test_null_adaptation_is_explicit(historical_functions):
-    assert historical_functions["fold"](None) == ""
+def test_null_adaptation_is_explicit(reference_functions):
+    assert reference_functions["fold"](None) == ""
     assert normalize_text(None) is None
     assert normalize_text("") == ""
     assert normalize_text("Café") == normalize_text("Cafe\u0301")

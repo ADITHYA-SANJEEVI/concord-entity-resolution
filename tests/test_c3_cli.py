@@ -37,7 +37,7 @@ def test_complete_public_c3_cli_and_no_leakage(c3_reproduction):
     assert summary["quality"]["test"]["query_count"] == 16
     counts = summary["failures"]["test"]["counts"]["FALSE_NEGATIVE"]
     assert all(counts[stage] > 0 for stage in ("RETRIEVAL", "SCORING", "OWNERSHIP", "AMBIGUOUS_OR_INSUFFICIENT_EVIDENCE"))
-    assert counts["DECODING"] == 0  # historical baseline has no extra set exclusion
+    assert counts["DECODING"] == 0  # reference baseline has no extra set exclusion
     for file in (root / "fit").glob("*truth*.json"):
         assert all(q.startswith("train-") for q, _ in read_json(file))
     negatives = read_stage(root / "fit/negatives.parquet", "negatives")

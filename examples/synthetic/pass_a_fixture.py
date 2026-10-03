@@ -1,4 +1,4 @@
-"""Invented P0 retrieval records. No organizer or external benchmark data."""
+"""Invented P0 retrieval records. Publicly distributable synthetic fixture."""
 
 from concord.contracts import EntityRecord
 
@@ -34,8 +34,8 @@ def fixture() -> tuple[tuple[EntityRecord, ...], tuple[tuple[str, str], ...]]:
     return rows, truth
 
 
-def historical_fixture() -> tuple[tuple[EntityRecord, ...], tuple[tuple[str, str], ...]]:
-    """Larger invented corpus that exercises the strict historical DF cutoffs."""
+def reference_fixture() -> tuple[tuple[EntityRecord, ...], tuple[tuple[str, str], ...]]:
+    """Larger invented corpus that exercises the strict reference DF cutoffs."""
     rows, truth = [], []
     for i in range(200):
         name, address = f"brand{i:04x}", f"location{i:04x}"

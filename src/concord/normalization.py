@@ -1,4 +1,4 @@
-"""The non-null historical fold, with explicit null and Unicode version semantics."""
+"""The non-null reference fold, with explicit null and Unicode version semantics."""
 
 import unicodedata
 

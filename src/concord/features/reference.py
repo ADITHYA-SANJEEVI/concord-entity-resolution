@@ -1,6 +1,6 @@
 """59-feature reference on a bounded C2 graph, never an all-pairs product.
 
-Legacy numeric adapters (empty/missing text, zero-based ranks and absent=999)
+Reference numeric adapters (empty/missing text, zero-based ranks and absent=999)
 are confined to model features. Raw records and C2 lane evidence stay lossless.
 Exact cosines are recomputed on supplied pairs using the declared C2 fit policy.
 """
@@ -87,7 +87,7 @@ _DEFINITIONS = _DIRECT_DEFINITIONS + (
 class FeatureDefinition:
     name: str
     definition: str
-    definition_version: str = "historical-reference-adapter.v1"
+    definition_version: str = "reference-reference-adapter.v1"
 
     def __post_init__(self):
         if any(not isinstance(v, str) or not v for v in (
@@ -173,7 +173,7 @@ def cross_features(qname: str | None, qaddr: str | None,
 
 
 def context_features(candidates, cosines) -> dict[tuple[str, str], tuple[float, ...]]:
-    """Match the preserved SQL RANK/MAX/unique-top rival semantics, including ties."""
+    """Match the reference SQL RANK/MAX/unique-top rival semantics, including ties."""
     query_groups, target_groups = defaultdict(list), defaultdict(list)
     for c in candidates:
         query_groups[c.s1_id, c.target_source].append((c.s1_id, c.target_id))

@@ -35,7 +35,7 @@ def main():
                "verified_artifacts": {k: len(m["artifacts"]) for k, m in manifests.items()},
                "producing_git": {k: m["git"] for k, m in manifests.items()},
                "artifact_bytes": {k: sum(a["bytes"] for a in m["artifacts"].values()) for k, m in manifests.items()},
-               "claim_boundary": "Invented P0 public experiments and current measured scale; historical/private/production claims excluded."}
+               "claim_boundary": "Invented P0 public experiments and current measured scale; reference/private/production claims excluded."}
     write_json(out / "reproduction.json", summary)
     print(json.dumps(summary, indent=2))
 

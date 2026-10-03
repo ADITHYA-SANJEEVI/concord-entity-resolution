@@ -54,11 +54,11 @@ Column 28 (S2 indicator) stays present. These are group ablations, not mutually
 exclusive causal interventions: retained graph/cross-script signals can contain
 information related to a removed direct group.
 
-Transliteration retrieval unions the historical five views with a separate top-five
+Transliteration retrieval unions the reference five views with a separate top-five
 name view of Unidecode-transformed raw names. On overlap the original C2 record wins;
 rescued rows carry the actual transformed name-lane evidence, with origin metadata.
 The original-record 59 features are then computed on that bounded union. This is an
-explicit new retrieval identity, never the historical baseline.
+explicit new retrieval identity, never the reference baseline.
 
 Case, spacing, punctuation, token order, transliteration and added competition
 perturb only S1 inputs. Each reruns retrieval, features, scoring, ownership, decoding

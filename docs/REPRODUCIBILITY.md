@@ -1,42 +1,68 @@
-# Reproducibility
+# Reproduction and current evidence
 
-## Preserved
+Install Python 3.12 and `python -m pip install -e ".[dev]"`. From a clean checkout:
 
-- Exact historical Python source for retrieval, 55-feature generation, cross-script features, scoring, finalization, comparison, and validation.
-- Exact 59-feature order and feature definitions.
-- Exact LightGBM configuration.
-- Required Python package versions from the verified package.
-- Model hashes, model type, 600-tree count, 59-feature count, and training-row count.
-- Output hashes, row counts, link counts, and validator evidence.
-- Resource requirements and deterministic ordering rules.
-
-## Intentionally omitted
-
-Organizer datasets, feature matrices, candidate graphs, output TSVs, caches, SQLite databases, Parquet files, ZIP archives, and model weights are not committed.
-
-The trained model is omitted even though its files are only 1.9 MB and 4.2 MB. It was trained from organizer-provided data, and the workspace contains no clear grant allowing public redistribution. The omission is a rights decision, not a size decision.
-
-Verified model identities:
-
-```text
-cross_script_59_reproduced_model.joblib
-c5b0e2246794f5e79d6cfed1e16d82040d682bdee4cf94eccb760d61e69d6610
-
-cross_script_59_reproduced_model.txt
-7c1797a78d4585647c818868a1d8960790cd2a5f77b9c90a36af9a2a4c710784
+```bash
+python -m pytest -q
+python -m ruff check src tests scripts examples
+python -m compileall -q src tests scripts examples
+git diff --check
+python scripts/reproduce_pass_a.py --output outputs/current-pass-a
+python scripts/reproduce_pass_b.py --output outputs/current-pass-b
+python scripts/reproduce_pass_c.py --output outputs/current-pass-c
 ```
 
-The historical model was a deterministic refit because the original serialized model had not been retained. POLICY_DEV raw probabilities differed by at most `1.9653723093426834e-11`, while selected ownership, emitted links, TP, FP, FN, and Macro F0.5 matched exactly.
+Pass A exercises normalization/retrieval, repeat candidate identity, coverage,
+frontiers, lane rescue and ablations, plus a stricter DF fixture. Pass B trains and
+repeats the reference model, verifies resolution identities, evaluates calibration
+and test populations, attributes errors, and exports query evidence. Pass C fits
+reference and diagnostic models, runs six feature ablations and retrieval variants,
+perturbs inputs, checks ordering/repeats, and measures the full scale recipe.
 
-## Private replay procedure
+Generated models, Parquet, logs and environments remain in ignored directories.
+Keep those directories to independently verify compact evidence. Retention scripts
+verify all manifest files and parent identities, clean producing Git state, and
+current implementation bytes before writing `docs/evidence/PASS_*_RUNS.json`.
 
-1. Obtain the organizer data and verified model artifacts through an authorized channel.
-2. Confirm all hashes in `archive_manifest/artifacts.json`.
-3. Use Linux or WSL2 with Python 3.12, 32 workers, about 128 GB RAM, and at least 35 GB temporary disk.
-4. Install `.[amazon]`.
-5. Place the two verified model files under `src/concord/legacy_amazon/artifacts/`.
-6. Run the historical pipeline with separate train, test, work, and output directories.
-7. Compare regenerated outputs with the frozen hashes.
-8. Run the historical validator with ID checking.
+Single-platform retention:
 
-The source expects organizer data and the model to exist. Missing private artifacts should fail explicitly rather than cause a substitute model or dataset to be used.
+```bash
+python scripts/retain_current_evidence.py --pass-a outputs/current-pass-a --pass-b outputs/current-pass-b --pass-c outputs/current-pass-c
+```
+
+The optional two-platform C4 check uses independently reproduced Windows and Linux
+runs and requires matching resolution sets, set quality, logical failure attribution
+and robustness query sets. It records probability deltas separately:
+
+```bash
+python scripts/retain_pass_c_evidence.py --windows outputs/windows-pass-c --linux outputs/linux-pass-c --output docs/evidence/PASS_C_RUNS.json
+```
+
+Evidence has two commits: a clean implementation producer, followed by a compact
+evidence commit. This avoids recording an evidence file as its own producer.
+Environment metadata includes package versions, Python, OS, process resource
+observations and source hashes. Reproduce within a platform for model-byte equality;
+cross-platform floating-point or model-byte equality is not guaranteed.
+
+## Neutral identity migration
+
+The current reference module is a reduced set of numerical contract functions.
+Archive-only runners, output validators, private-artifact manifests, prior metrics,
+and superseded design/audit documents were removed. Required reference functions
+and column definitions were retained; attribution-bearing identities were replaced
+with Concord technical names. Documentation now describes implemented C1–C4.
+
+Retrieval profile IDs, feature/decoder versions, feature definition versions, fit
+evidence fields and seed-policy configuration changed. Their hashes, model metadata,
+artifact parent DAGs and source manifests therefore change. The neutral reference
+schema no longer embeds unavailable training/cache/source digests. New synthetic
+runs establish new identities; prior bundles are superseded, not edited to claim
+hash continuity. Numerical thresholds, feature order and budgets remain fixed.
+
+## Documentation classification
+
+Authoritative: README, architecture, reproduction, and the three usage guides.
+Current evidence: the three root evidence reports and compact JSON bundles.
+Useful reference: `reference_baseline` contract artifacts and parity tests.
+Superseded proposals, origin records, archive manifests and archaeological audits
+were removed from the working tree. Git history was left intact.

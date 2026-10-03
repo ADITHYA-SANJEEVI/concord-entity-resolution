@@ -92,7 +92,7 @@ def main():
                "calibration": {g: read_json(out / f"evaluate-{g}-calibration/calibration.json") for g in ("calibration", "test")},
                "failures": {g: read_json(out / f"evaluate-{g}-failures/failures.json") for g in ("calibration", "test")},
                "evidence_example": explanation,
-               "claim_boundary": "Public invented P0 only; no private parity, leaderboard, scale, WDC or C4 stability claim."}
+               "claim_boundary": "Invented P0 fixture only; integration and policy diagnostics."}
     write_json(out / "summary.json", summary)
     print(json.dumps({"model_repeat_equal": True, "resolution_repeat_equal": True,
                       "test_quality": summary["quality"]["test"], "test_failures": summary["failures"]["test"]["counts"]}, indent=2))

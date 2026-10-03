@@ -31,10 +31,10 @@ from concord.normalization import normalize, normalize_text
 from concord.retrieval.baseline import RetrievalConfig, retrieve, synthetic_config, vectorizer
 
 ROOT = Path(__file__).resolve().parents[1]
-LEGACY = ROOT / "src/concord/legacy_amazon"
+REFERENCE = ROOT / "src/concord/reference_baseline"
 
 
-def preserved(path, names, namespace):
+def reference(path, names, namespace):
     tree = ast.parse(path.read_text(encoding="utf-8"))
     selected = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in names]
     exec(compile(ast.Module(selected, type_ignores=[]), str(path), "exec"), namespace)
@@ -42,11 +42,11 @@ def preserved(path, names, namespace):
 
 
 @pytest.fixture
-def historical_feature_functions():
+def reference_feature_functions():
     namespace = {"re": re, "np": np, "pd": pd, "pa": pa, "pq": pq, "time": time, "Path": Path,
                  "WORD": re.compile(r"\w+", re.UNICODE), "NUM": re.compile(r"\d+"),
                  "fuzz": fuzz, "JaroWinkler": JaroWinkler, "BASE_FEATURES": list(FEATURE_NAMES[:38])}
-    return preserved(LEGACY / "frozen_stage1_55_scorer.py",
+    return reference(REFERENCE / "features.py",
                      {"direct", "rep", "tri", "overlap", "coord", "_worker", "_context_sql"}, namespace)
 
 
@@ -61,14 +61,14 @@ def historical_feature_functions():
     ("कमल दुकान", "१२ सड़क", "Kamal Dukan", "12 Road"),
     ("東京商店", "18 Main", "Tokyo", "18 Main"),
 ])
-def test_preserved_direct_and_cross_function_parity(values, historical_feature_functions):
+def test_reference_direct_and_cross_function_parity(values, reference_feature_functions):
     qn, qa, tn, ta = values
     adapted = tuple(normalize_text(v) or "" for v in values)
     for source in ("S2", "S3"):
-        expected = historical_feature_functions["direct"](*adapted, source)
+        expected = reference_feature_functions["direct"](*adapted, source)
         assert np.array_equal(np.array(direct_features(*adapted, source), dtype=np.float32),
                               np.array(expected, dtype=np.float32))
-    namespace = preserved(LEGACY / "qualified_crossscript_generator.py",
+    namespace = reference(REFERENCE / "crossscript.py",
                           {"get_script", "tri", "toks", "jaccard", "compute_4_features"},
                           {"re": re, "unicodedata": unicodedata, "np": np, "fuzz": fuzz, "unidecode": unidecode})
     frame = pd.DataFrame({"s1_id": ["opaque q"], "target_id": ["opaque t"]})
@@ -79,7 +79,7 @@ def test_preserved_direct_and_cross_function_parity(values, historical_feature_f
 
 
 def test_order_schema_identity_and_immutable_values():
-    original = read_json(LEGACY / "artifacts/ordered_59_feature_schema.json")
+    original = read_json(REFERENCE / "artifacts/ordered_59_feature_schema.json")
     assert tuple(original["ordered_features"]) == FEATURE_NAMES
     assert len(FEATURE_NAMES) == 59
     assert REFERENCE_SCHEMA.sha256 == content_sha256(asdict(REFERENCE_SCHEMA))
@@ -104,15 +104,15 @@ def test_order_schema_identity_and_immutable_values():
         feature_matrix((replace(row, values=(1e100,) + (0.,) * 58),))
 
 
-def test_all_59_against_preserved_worker_and_sql_on_uncapped_public_fixture(
-        historical_feature_functions, tmp_path):
+def test_all_59_against_reference_worker_and_sql_on_uncapped_public_fixture(
+        reference_feature_functions, tmp_path):
     """Actual worker + actual SQL expressions (SQLite window dialect adapter).
 
     Private sample ordering/model probabilities are not part of this claim.
-    The preserved SQL's FLOAT casts are applied at the final float32 boundary.
+    The reference SQL's FLOAT casts are applied at the final float32 boundary.
     """
-    records = tuple(EntityRecord(f"q{i:04d}", "S1", f"Invented Aurora {i:04d}", f"{i} Fable Lot", "PUBLIC") for i in range(200)) + tuple(
-        EntityRecord(f"t{i:04d}", "S2", f"Invented Aurora {i:04d}", f"{i} Fable Lot", "PUBLIC") for i in range(200))
+    records = tuple(EntityRecord(f"q{i:04d}", "S1", f"Invented Lantern {i:04d}", f"{i} Fable Lot", "PUBLIC") for i in range(200)) + tuple(
+        EntityRecord(f"t{i:04d}", "S2", f"Invented Lantern {i:04d}", f"{i} Fable Lot", "PUBLIC") for i in range(200))
     normalized = tuple(normalize(r) for r in records)
     config = RetrievalConfig()
     candidates = retrieve(normalized, config).candidates
@@ -133,24 +133,24 @@ def test_all_59_against_preserved_worker_and_sql_on_uncapped_public_fixture(
                            "country": c.country, "retrieval_view_mask": c.retrieval_view_mask,
                            **{col: ranks.get(lane, 999) for lane, col in zip(
                                ("name", "compact", "address", "combined", "reverse"), FEATURE_NAMES[33:38], strict=True)}})
-    graph = tmp_path / "historical-graph.parquet"
+    graph = tmp_path / "reference-graph.parquet"
     pq.write_table(pa.Table.from_pylist(graph_rows), graph)
-    legacy = historical_feature_functions
-    legacy["_G"] = {"graph": str(graph), "q": [{"name": r.business_name_normalized, "address": r.business_address_normalized} for r in q],
+    ref_functions = reference_feature_functions
+    ref_functions["_G"] = {"graph": str(graph), "q": [{"name": r.business_name_normalized, "address": r.business_address_normalized} for r in q],
                     "t": [{"name": r.business_name_normalized, "address": r.business_address_normalized} for r in t],
                     "qmap": {r.entity_id: i for i, r in enumerate(q)}, "tmap": {r.entity_id: i for i, r in enumerate(t)},
                     **dict(zip(("Qn", "Tn", "Qc", "Tc", "Qa", "Ta"), matrices, strict=True))}
-    base = tmp_path / "historical-base.parquet"
-    legacy["_worker"](("PUBLIC", 0, str(base)))
+    base = tmp_path / "reference-base.parquet"
+    ref_functions["_worker"](("PUBLIC", 0, str(base)))
     frame = pq.read_table(base).to_pandas()
-    sql = legacy["_context_sql"]("PUBLIC", "unused", "unused")
+    sql = ref_functions["_context_sql"]("PUBLIC", "unused", "unused")
     query = sql[len("COPY ("):sql.index(") TO '")].replace("read_parquet('unused')", "base_input").replace("::FLOAT", "")
     with sqlite3.connect(":memory:") as con:
         frame.to_sql("base_input", con, index=False)
         expected = pd.read_sql_query(query, con)
     rawq = {r.entity_id: {"business_name": r.business_name, "business_address": r.business_address} for r in records[:200]}
     rawt = {r.entity_id: {"business_name": r.business_name, "business_address": r.business_address} for r in records[200:]}
-    qualifier = preserved(LEGACY / "qualified_crossscript_generator.py",
+    qualifier = reference(REFERENCE / "crossscript.py",
                           {"get_script", "tri", "toks", "jaccard", "compute_4_features"},
                           {"re": re, "unicodedata": unicodedata, "np": np, "fuzz": fuzz, "unidecode": unidecode})
     for name, column in zip(FEATURE_NAMES[-4:], qualifier["compute_4_features"](expected, rawq, rawt), strict=True):
@@ -159,7 +159,7 @@ def test_all_59_against_preserved_worker_and_sql_on_uncapped_public_fixture(
     assert len(rows) == len(candidates)  # no Cartesian expansion
 
 
-def test_sql_context_ties_and_source_groups(historical_feature_functions):
+def test_sql_context_ties_and_source_groups(reference_feature_functions):
     candidates = tuple(RetrievalCandidate(q, t, source, None, 1, (LaneEvidence("name", 1, .5),))
                        for q, t, source in (("a", "t", "S2"), ("b", "t", "S2"), ("a", "u", "S3"), ("a", "v", "S2")))
     cosines = {("a", "t"): (.7, 0., .3, .5), ("b", "t"): (.7, 0., .2, .45),

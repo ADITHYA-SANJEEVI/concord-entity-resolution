@@ -102,7 +102,7 @@ def test_reference_model_repeats_and_identity_is_not_a_path(fitted_scorer, tmp_p
     assert np.array_equal(scorer.predict_proba(X), repeated.predict_proba(X))
     params = scorer.get_params()
     assert (params["n_estimators"], params["learning_rate"], params["num_leaves"], params["reg_lambda"]) == (600, .05, 63, 1.)
-    assert scorer.config.seed_recovery == "DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND"
+    assert scorer.config.seed_policy == "concord.fixed-seed-42.v1"
     metadata = model_metadata(scorer, SHA, SHA, SHA, SHA, SHA, SHA, SHA)
     assert "path" not in metadata
     assert metadata["feature_schema_sha256"] == REFERENCE_SCHEMA.sha256

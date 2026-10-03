@@ -1,8 +1,8 @@
 # Concord Pass B: C3 usage and semantics
 
 C3 adds features, reference scoring, global ownership, decoding, evaluation, stage
-attribution and resolution evidence. C4 is unavailable. Pass A retrieval and its
-accepted evidence remain unchanged. No private inputs are required.
+attribution and resolution evidence. C4 research builds on these same contracts.
+All public reproduction inputs are invented synthetic records.
 
 ## Install and reproduce
 
@@ -57,8 +57,8 @@ exposed. Re-executing the public script is the bounded C3 reproduction path.
 ## Features and parity boundary
 
 The ordered reference has exactly 59 definitions: 29 direct string/numeric/source
-features, four exact sparse cosines, five legacy numeric lane ranks, 17 graph-context
-features, and four preserved cross-script features. The immutable schema hashes
+features, four exact sparse cosines, five reference numeric lane ranks, 17 graph-context
+features, and four reference cross-script features. The immutable schema hashes
 the ordered names, definitions and definition versions, including its schema version.
 Dtype is not part of this schema identity. Public `FeatureRow.values` is a tuple of
 finite numbers; storage preserves float64 values, and conversion to float32 happens
@@ -68,37 +68,37 @@ The engine consumes C2 candidates and computes coordinate-only sparse dot produc
 for those pairs. It never generates candidates or computes an all-pairs score matrix.
 Exact name/compact/address cosines are available even when a lane did not retrieve
 the pair. Their vectorizers use the declared C2 parameters and canonical fit policy.
-The combined exact feature is float32 `0.5*name + 0.5*address`, as in the preserved
+The combined exact feature is float32 `0.5*name + 0.5*address`, as in the reference
 worker. Graph-context SQL RANK semantics preserve ties and source partitions; these
 pre-model similarity ranks are features, not final ownership results.
 
 Two explicit numeric compatibility adapters preserve reference feature definitions:
 
-- Missing and empty normalized text both produce the historical empty-input numeric
+- Missing and empty normalized text both produce the reference empty-input numeric
   features. Raw and normalized entity records retain `None` versus `""` unchanged.
 - A present C2 one-based lane rank becomes a zero-based numeric model feature;
-  absent ranks become the legacy numeric feature value `999`. This value is confined
+  absent ranks become the reference numeric feature value `999`. This value is confined
   to the reference feature vector. C2 lane provenance stays absent/null, and contains
   no sentinel.
 
-Public tests execute preserved direct and four-feature functions on exact, partial,
+Public tests execute reference direct and four-feature functions on exact, partial,
 missing/empty, Unicode, punctuation, numeric, acronym-like and cross-script fixtures.
-A full 59-column test executes the preserved worker and preserved SQL expressions
+A full 59-column test executes the reference worker and reference SQL expressions
 on an uncapped public graph, with a documented SQLite window-dialect adapter, then
-compares at the historical float32 boundary. Historical SQL's `::FLOAT` cast is
+compares at the reference float32 boundary. Reference SQL's `::FLOAT` cast is
 applied at that final numeric boundary; window expressions are unchanged.
 
 These are public function/schema/reference claims. They are not private feature-
-value or probability parity. Private capped sample membership and historical-scale
+value or probability parity. Private capped sample membership and reference-scale
 full-graph parity remain UNVERIFIED, as documented in Pass A. Feature transliteration
-implements the historical four features only; retrieval gains are not claimed.
+implements the reference four features only; retrieval gains are not claimed.
 
 ## Negative mining and scorer
 
 `concord.top-retrieval-hard-negatives.v1` keeps all retrieved training truths and up
 to 16 non-truth retrieved pairs per query, ordered by maximum lane similarity
 descending. A seed-42 content hash breaks selection ties reproducibly. This seed is
-a new explicit mining configuration, not a claim about original historical mining.
+a new explicit mining configuration, not a claim about original reference mining.
 Unknown/cross-split pairs are rejected. Unretrieved truths are counted but never
 injected into the graph. Each mined pair records label, selection reason, graph,
 retrieval configuration, split and mining identities. Closed-world labels are
@@ -108,9 +108,9 @@ The scorer interface is `fit`, `predict_proba`, `get_params`, `fingerprint`. It 
 numeric matrices and emits probabilities; it knows nothing about retrieval,
 ownership, decoding or attribution. The LightGBM reference config uses 600 trees,
 learning rate 0.05, 63 leaves, min_child_samples 100, L2 1.0, subsample/column sample
-1.0, no class weights and no early stopping. Seed 42 is explicitly
-`DEFAULTED_TO_42_NO_PRIOR_VALUE_FOUND`, not an original-seed recovery claim. Single
-threading, deterministic mode and column-wise fitting are new portability settings.
+1.0, no class weights and no early stopping. Seed 42 is declared by
+`concord.fixed-seed-42.v1`. Single threading, deterministic mode and column-wise
+fitting are explicit portability settings.
 Actual fitted tree count is recorded, not inferred from the requested count.
 
 Model identity includes format, actual artifact hash, config, ordered feature schema,
@@ -128,7 +128,7 @@ runner-up; a loser's rival is the winner. Margin is candidate score minus rival 
 it is undefined for a singleton competitor set. No Python iteration order enters
 arbitration.
 
-The historical decoder accepts exactly `is_owner and score >= 0.640`. The rejection
+The reference decoder accepts exactly `is_owner and score >= 0.640`. The rejection
 reason is BELOW_THRESHOLD first when score-ineligible, otherwise LOST_OWNERSHIP.
 Accepted candidates use NONE. SET_POLICY remains reserved and is never fabricated
 by this baseline. All rejected rows remain in typed disposition artifacts.
@@ -187,6 +187,3 @@ FAILED manifests use the validated Pass A failure writer and retain the original
 exception. Run timers describe stage execution after parent/input verification,
 including artifact generation, not complete CLI startup. RSS is process-wide, not
 isolated stage memory. All resource observations are tiny-fixture smoke measurements.
-
-Private Amazon parity is unperformed. WDC, large-scale throughput/memory, leaderboard
-improvement, retrieval challengers, drift and stability research remain C4 work.

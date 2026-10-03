@@ -15,7 +15,7 @@ from concord.retrieval.analysis import candidate_fingerprint, evaluate_retrieval
 from concord.retrieval.baseline import (
     CANONICAL_SAMPLING_ORDER,
     EMPTY_VOCABULARY_POLICY,
-    HISTORICAL_K,
+    REFERENCE_K,
     RetrievalConfig,
     _fit_sample_positions,
     materialize_views,
@@ -43,8 +43,8 @@ def test_view_boundary(name, address, compact, missing):
 
 
 @pytest.mark.parametrize("view", ["name", "compact", "address"])
-def test_historical_vectorizer_parity(view, historical_functions):
-    assert vectorizer(view, RetrievalConfig()).get_params() == historical_functions["vec"](
+def test_reference_vectorizer_parity(view, reference_functions):
+    assert vectorizer(view, RetrievalConfig()).get_params() == reference_functions["vec"](
         view).get_params()
 
 
@@ -125,7 +125,7 @@ def test_reverse_bounds_are_per_target():
         EntityRecord(f"t{i:03d}", "S2", "Identical Brand", "18 Main Road") for i in range(40))
     run = retrieve(tuple(normalize(r) for r in rows), synthetic_config())
     assert len(run.candidates) == 40
-    assert len(run.candidates) > sum(HISTORICAL_K[:-1])
+    assert len(run.candidates) > sum(REFERENCE_K[:-1])
     assert all(any(e.lane == "reverse" for e in c.lane_evidence) for c in run.candidates)
 
 
@@ -217,17 +217,17 @@ def test_frontier_pareto_and_no_promotion(public_fixture):
     assert report["promotion"] == "DIAGNOSTIC_ONLY"
 
 
-def test_historical_sparse_retrieve_rank_adapter(historical_functions, tmp_path):
-    """Historical bounded products and ranks agree on a no-tie public numeric fixture.
+def test_reference_sparse_retrieve_rank_adapter(reference_functions, tmp_path):
+    """Reference bounded products and ranks agree on a no-tie public numeric fixture.
 
-    Preserved ranks are zero-based; the new boundary intentionally adds one.
+    Reference ranks are zero-based; the new boundary intentionally adds one.
     """
     class Volume:
         def commit(self):
             pass
 
-    historical_functions.update({"OUT": tmp_path, "CHUNK": 2,
-                                 "K": dict(zip(LANES, HISTORICAL_K, strict=True)),
+    reference_functions.update({"OUT": tmp_path, "CHUNK": 2,
+                                 "K": dict(zip(LANES, REFERENCE_K, strict=True)),
                                  "sp_matmul_topn": sp_matmul_topn, "pd": pd, "time": time})
     q = [{"s1_id": f"q{i}"} for i in range(3)]
     t = [{"target_id": f"t{i}"} for i in range(4)]
@@ -235,12 +235,12 @@ def test_historical_sparse_retrieve_rank_adapter(historical_functions, tmp_path)
     tm = sp.csr_matrix(np.array([[1, 0], [0, 1], [.3, .7], [.7, .3]], dtype=np.float32))
     for lane in LANES:
         left, right = (tm, qm) if lane == "reverse" else (qm, tm)
-        historical_functions["retrieve"](lane, q, t, left, right, "public", Volume())
-        historical = pd.concat(pd.read_parquet(p) for p in
+        reference_functions["retrieve"](lane, q, t, left, right, "public", Volume())
+        reference = pd.concat(pd.read_parquet(p) for p in
                                sorted((tmp_path / "checkpoints/public" / lane).glob("*.parquet")))
         expected = left @ right.T  # only the tiny test oracle may use an unrestricted product
         actual = {}
-        for _, row in historical.iterrows():
+        for _, row in reference.iterrows():
             key = row.s1_id, row.target_id
             actual[key] = int(row[f"{lane}_rank"]) + 1
             qi, ti = int(row.s1_id[1:]), int(row.target_id[1:])
@@ -249,15 +249,15 @@ def test_historical_sparse_retrieve_rank_adapter(historical_functions, tmp_path)
             assert row[f"{column}_cosine"] == pytest.approx(expected[i, j])
         for i in range(left.shape[0]):
             order = sorted(range(right.shape[0]), key=lambda j: -expected[i, j])
-            for rank, j in enumerate(order[:HISTORICAL_K[LANES.index(lane)]], 1):
+            for rank, j in enumerate(order[:REFERENCE_K[LANES.index(lane)]], 1):
                 key = (q[j]["s1_id"], t[i]["target_id"]) if lane == "reverse" else (
                     q[i]["s1_id"], t[j]["target_id"])
                 assert actual[key] == rank
 
 
-def test_historical_uncapped_reference_graph_parity(historical_functions):
+def test_reference_uncapped_reference_graph_parity(reference_functions):
     """Function/reference parity only; this population never reaches FIT_CAP."""
-    # 200 pairs keep each unique full-name/address term below historical max_df.
+    # 200 pairs keep each unique full-name/address term below reference max_df.
     rows = []
     for i in range(200):
         name = f"brand{i:04x}"
@@ -271,7 +271,7 @@ def test_historical_uncapped_reference_graph_parity(historical_functions):
     for lane in LANES[:3]:
         qtext = [r.business_address if lane == "address" else r.business_name for r in qrows]
         ttext = [r.business_address if lane == "address" else r.business_name for r in trows]
-        v = historical_functions["vec"](lane)
+        v = reference_functions["vec"](lane)
         try:
             v.fit(qtext + ttext)
         except ValueError:
@@ -288,7 +288,7 @@ def test_historical_uncapped_reference_graph_parity(historical_functions):
         left, right = (tm, qm) if lane == "reverse" else (qm, tm)
         if not left.shape[1]:
             continue
-        hits = sp_matmul_topn(left, right.T.tocsr(), top_n=HISTORICAL_K[LANES.index(lane)],
+        hits = sp_matmul_topn(left, right.T.tocsr(), top_n=REFERENCE_K[LANES.index(lane)],
                              threshold=0.0, sort=True, n_threads=1).tocoo()
         for i, j, value in zip(hits.row, hits.col, hits.data, strict=True):
             pair = (qrows[j].entity_id, trows[i].entity_id) if lane == "reverse" else (
@@ -329,12 +329,12 @@ def test_actual_fit_cap_position_boundary(offset):
 
 
 @pytest.mark.parametrize("population", [3, 4, 5])
-def test_capped_membership_order_boundary_against_preserved_sampler(
-        population, historical_functions, tmp_path):
-    """Public reduced-cap experiment on the preserved sampler, not private parity.
+def test_capped_membership_order_boundary_against_reference_sampler(
+        population, reference_functions, tmp_path):
+    """Public reduced-cap experiment on the reference sampler, not private parity.
 
     Equal seeded positions imply equal membership only if materialization order
-    matches (or all records are selected). Capture the actual preserved sample file.
+    matches (or all records are selected). Capture the actual reference sample file.
     The vectorizer stub isolates membership from vocabulary fitting.
     """
     class Volume:
@@ -354,36 +354,36 @@ def test_capped_membership_order_boundary_against_preserved_sampler(
          for key in ("q-z", "q-a")]
     t = [{"target_id": key, "name": f"brand {key}", "address": "18 Main Road"}
          for key in ("t-z", "t-y", "t-x")[:population - len(q)]]
-    historical_functions.update({
+    reference_functions.update({
         "OUT": tmp_path, "MOUNT": tmp_path, "SEED": 0, "FIT_CAP": 4,
         "vec": lambda view: CaptureVectorizer(),
     })
-    historical_functions["fit_transform"](q, t, "name", "public", Volume())
+    reference_functions["fit_transform"](q, t, "name", "public", Volume())
     sample = (tmp_path / "vectorizer_samples/public_name.txt").read_text().splitlines()
     original_ids = ["q:" + row["s1_id"] for row in q] + ["t:" + row["target_id"] for row in t]
-    historical_positions = [original_ids.index(key) for key in sample]
+    reference_positions = [original_ids.index(key) for key in sample]
     rows = tuple(EntityRecord(row["s1_id"], "S1", row["name"], row["address"], "public")
                  for row in q) + tuple(
         EntityRecord(row["target_id"], "S2", row["name"], row["address"], "public") for row in t)
     config = synthetic_config(fit_cap=4)
     selected = _fit_sample_positions(population, config)
-    assert historical_positions == selected.tolist()
+    assert reference_positions == selected.tolist()
     canonical = sorted(rows, key=lambda row: (row.source, row.entity_id))
     canonical_sample = [canonical[int(i)] for i in selected]
-    historical_members = {key[2:] for key in sample}
+    reference_members = {key[2:] for key in sample}
     canonical_members = {row.entity_id for row in canonical_sample}
     if population > config.fit_cap:
-        assert historical_members != canonical_members
+        assert reference_members != canonical_members
     else:
-        assert historical_members == canonical_members
+        assert reference_members == canonical_members
     run = retrieve(tuple(normalize(row) for row in rows), config)
     for evidence in run.fit_evidence:
         assert evidence.population_count == population
         assert evidence.cap_applied is (population > config.fit_cap)
         assert evidence.sampling_order_policy == CANONICAL_SAMPLING_ORDER
-        assert evidence.historical_capped_sample_parity == "UNVERIFIED"
+        assert evidence.reference_capped_sample_parity == "UNVERIFIED"
         with pytest.raises(ValueError, match="has not been verified"):
-            replace(evidence, historical_capped_sample_parity="VERIFIED")
+            replace(evidence, reference_capped_sample_parity="VERIFIED")
         from concord.metadata import content_sha256
 
         assert evidence.sample_fingerprint == content_sha256([
@@ -400,24 +400,24 @@ def test_sampling_and_fail_safe_policies_fingerprinted_and_immutable():
     values.pop("sampling_order_policy")
     assert config.fingerprint != content_sha256(values)
     with pytest.raises(FrozenInstanceError):
-        config.sampling_order_policy = "historical-materialization"
+        config.sampling_order_policy = "reference-materialization"
     with pytest.raises(ValueError):
-        replace(config, sampling_order_policy="historical-materialization")
+        replace(config, sampling_order_policy="reference-materialization")
     with pytest.raises(ValueError):
-        replace(config, empty_vocabulary_policy="legacy-raise")
+        replace(config, empty_vocabulary_policy="reference-raise")
 
 
-def test_empty_vocabulary_is_new_fail_safe_not_legacy_execution(historical_functions, tmp_path):
+def test_empty_vocabulary_is_new_fail_safe_not_reference_execution(reference_functions, tmp_path):
     class Volume:
         def commit(self):
             pass
 
-    historical_functions.update({"OUT": tmp_path, "MOUNT": tmp_path,
+    reference_functions.update({"OUT": tmp_path, "MOUNT": tmp_path,
                                  "SEED": 0, "FIT_CAP": 3_000_000})
     q = [{"s1_id": "q", "name": "", "address": ""}]
     t = [{"target_id": "t", "name": "", "address": ""}]
     with pytest.raises(ValueError):
-        historical_functions["fit_transform"](q, t, "name", "public", Volume())
+        reference_functions["fit_transform"](q, t, "name", "public", Volume())
     run = retrieve((normalize(EntityRecord("q", "S1", "", "", "public")),
                     normalize(EntityRecord("t", "S2", "", "", "public"))))
     assert run.candidates == () and len(run.warnings) == 3

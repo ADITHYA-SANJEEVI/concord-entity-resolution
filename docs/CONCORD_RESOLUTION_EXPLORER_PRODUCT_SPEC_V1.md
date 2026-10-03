@@ -3,7 +3,8 @@
 Specification date: 4 October 2026 (Asia/Calcutta). Individual project by Adithya Sanjeevi.
 
 Audited repository: `ADITHYA-SANJEEVI/concord-entity-resolution`.
-Authoritative audited HEAD: `cd3e8646d6f1b92a425db4b86af6be4004ba3a2f`.
+Authoritative backend baseline: `cd3e8646d6f1b92a425db4b86af6be4004ba3a2f`.
+Implementation-readiness audit input HEAD: `52d4dcf7f661f279b11444f41cebe65c15deeb32` (specification-only change from that baseline).
 Baseline tag: `concord-neutral-public-baseline`.
 Specification branch: `product/resolution-explorer-spec`.
 Recorded evidence producer: `0ead99612ce93d47e51d748d3ecc01a026a92864`.
@@ -47,11 +48,13 @@ Four audit labels apply throughout:
 | Label | Meaning |
 |---|---|
 | C | Bytes or structured fields committed at audited HEAD |
-| L | Implemented local output/CLI capability; full producing output bytes are absent from this checkout |
+| L | Implemented file-backed output/CLI capability; bytes are not committed, but verified recorded outputs exist in this working tree (Section 30). Availability must be checked in each consuming checkout |
 | D | Deterministic read-only presentation derivation from supplied C/L inputs; not a newly measured result |
 | G | BACKEND READ GAP; proposed access or absent data, not existing functionality |
 
 “Implemented” and “publicly inspectable now” are different claims. `outputs/` and Parquet/model artifacts are ignored. The public bundles embed manifests, summaries and selected examples, not full stage tables.
+
+The implementation-readiness audit found full baseline C3/C4 recorded stages locally. These are explicitly LOCAL evidence, not additions to the public bundles. C/L labels describe delivery, not different backend semantics. Sections 26–27 govern the first implementation gates; the other route designs describe later product scope.
 
 ### 3.2 Capability and evidence inventory
 
@@ -134,7 +137,7 @@ Changing a run must not silently preserve an ID-matched case as if it were the s
 | `/failures` | Failure Atlas aggregate and case browser | Reference/test in chosen C4 run; C3 selectable |
 | `/experiments` | Diagnostic experiment catalogue | Definition-order table, not score ranking |
 | `/experiments/:experiment_id` | Scientific evidence and reference comparison | Test tab; explicit run context |
-| `/scale` | Controlled workload observations | One platform, pipeline stage, available sizes |
+| `/scale` | Recorded workload observations; uncontrolled cross-platform timing | One platform, pipeline stage, available sizes |
 | `/evidence` | Artifact occurrence browser | Declared manifest artifacts with availability |
 | `/evidence/:artifact_id` | Artifact occurrence and lineage | Identity, producer, parents, coverage |
 
@@ -211,7 +214,7 @@ Visual shorthand uses cobalt selection, teal accepted, amber ownership contentio
 
 Selecting ownership opens a compact target-centered relation view only when rival evidence is present. It contains selected source, target and recorded rival source, with each known pair score annotated; winner ID/rank is explicit. No inferred relation between source records. Rival details unavailable? Show “Rival identity/score recorded; full source case not retained” and retain the ledger rather than inventing the source's dossier. A loser has a winner rival; an owner has the runner-up. The diagram title must use the appropriate meaning.
 
-An expanded competitor list is a future recorded-artifact feature using all ownership rows for the target. It cannot be reconstructed from a single rival field or bounded top-candidate snippet. Graph nodes are focusable alternatives to the same selected-pair actions; an equivalent native table is always available. Limit visible relation detail to selected edge plus one rival in Slice 1. No force layout, animated particles, artificial clustering, invented nearest neighbors or dense hairball.
+An expanded competitor list requires all ownership and score rows for the target; these exist in the validated local outputs, but no frontend index is implemented. It cannot be reconstructed from a single rival field or bounded top-candidate snippet. Graph nodes are focusable alternatives to the same selected-pair actions; an equivalent native table is always available. Limit visible relation detail to selected edge plus one rival in C-UI1; the native ledger is sufficient for that gate. No force layout, animated particles, artificial clustering, invented nearest neighbors or dense hairball.
 
 ### 8.3 Scope and completeness
 
@@ -308,7 +311,7 @@ Default plot shows one platform. A side-by-side platform table is allowed with t
 
 RSS is process RSS sampled every 10ms plus stage boundaries, includes dependencies/allocator state and can miss spikes. It is neither stage allocation nor an OS peak. Stage RSS values must not be stacked or summed. Stage medians also do not necessarily sum to pipeline median. Default stage cost presentation is a seconds table; later raw repetition plots can display each measured stage and bookkeeping residual only when accurately computed from matching repetitions.
 
-Workload throughput fields, if exposed in advanced detail, are explicitly measured queries/candidates divided by elapsed workload time. They are not production request QPS. Retained-stage byte count is a scoped output total, not database capacity or all-run disk usage. Raw repetition rows are unavailable in the compact checkout; min/median/max summary is sufficient for Slice 1 and must not imply three visible raw points.
+Workload throughput fields, if exposed in advanced detail, are explicitly measured queries/candidates divided by elapsed workload time. They are not production request QPS. Retained-stage byte count is a scoped output total, not database capacity or all-run disk usage. Raw repetition rows are absent from the compact bundles but present in local observations.parquet: 72 measured rows per platform (three sizes × three repetitions × eight stages), excluding warmups. Each size's retained stage tables describe only the final measured repetition, index 2, not every repetition. Summary-only delivery must not imply visible raw points; stage medians are not additive pipeline timing. Scale UI remains outside C-UI1.
 
 ## 12. Evidence / Provenance
 
@@ -348,7 +351,7 @@ Artifact preview supports available JSON/typed records and bounded plain text on
 
 ## 13. Global search / command navigation
 
-Ctrl+K / Cmd+K opens a labelled dialog. It searches a scoped recorded index and provides navigation commands to the five global sections, copy-current-link and open-current-evidence. No run, train, promote, resolve-new-record or write commands.
+Ctrl+K / Cmd+K opens a labelled dialog. It searches a scoped recorded index. C-UI1 provides Explorer context/case/candidate navigation, copy-current-link and inline current-evidence detail only. Navigation to the five global sections belongs to later route delivery. No run, train, promote, resolve-new-record or write commands.
 
 Index types: source IDs, target IDs, retained failure-pair handles, experiment names/definition handles and artifact occurrence paths/hashes. Exact ID matches rank before prefix matches; deterministic lexical order within type, grouped by run. Optional substring matching is literal recorded-index matching, never the Concord entity-resolution engine or semantic search. Search state is a navigation convenience; selecting a hit opens a durable route.
 
@@ -362,16 +365,16 @@ This is a field contract for a future adapter; no TypeScript or frontend code is
 
 | Object | Fields | Interpretation |
 |---|---|---|
-| EvidenceContext | runHandle, bundleRef, platform, manifestKey, experimentId, definitionName?, role?, datasetFingerprint, splitFingerprint?, origin, delivery, evidenceClass, producerCommit | Immutable observation scope; UI handles are D |
+| EvidenceContext | runHandle, observationHandle, bundleRef, pass, platform, manifestKey, experimentId, definitionName?, definitionSha256?, role?, observationVariant, workloadSize?, repetition?, artifactPrefix?, executionDatasetFingerprint, splitPlanFingerprint?, datasetFingerprint, splitFingerprint?, retrievalIdentity?, modelFingerprint?, modelArtifactPhysicalHash?, origin, delivery, evidenceClass, producerCommit | Execution provenance and observation membership are separate; variant is ordinary / named perturbation / scale; handles are D |
 | ReadEvidence<T> | availability, value?, references[], coverage?, issue? | availability: available / not_retained / not_applicable / malformed / verification_failed; zero is a value, not availability |
-| EvidenceReference | contextHandle, artifactOccurrenceHandle?, bundlePath?, jsonPointer?, recordedPhysicalHash? | Points to exact source of a field; absence is explicit |
+| EvidenceReference | observationHandle, artifactOccurrenceHandle?, bundlePath?, jsonPointer?, recordedPhysicalHash? | Points to exact scoped source of a field; absence is explicit |
 | Coverage | loadedCount?, declaredCount?, extent, limitation | extent: complete / bounded_example / summary_only / partial; D from known counts |
 | SourceEntity | entityId, source, rawName, rawAddress, country, entitySchemaVersion, normalizedName, normalizedAddress, normalizationVersion | Text fields are ReadEvidence<string or null>; null raw text is an available value |
 | ResolutionCase | context, sourceId, source, candidates[], candidateCoverage, resolution, capsule, failures[], truthTargets | Joined view; missing collections do not mean empty outcomes |
 | CandidateEvidence | pairKey, targetId, targetSource, target, retrieval, features, score, ownership, disposition, emitted | Read-only independent stages; target metadata may be absent |
 | RetrievalProvenance | viewMask, laneEvidence[], country, retrievalIdentity, config, fitEvidence, warnings, representationOrigin | Lane evidence: lane, rank, similarity; origin may be G |
-| FeatureEvidence | schemaVersion, schemaSha256, orderedDefinitions[], values, effectiveValues, removedIndices | Definitions: index, name, definition, definitionVersion; effective inputs may be D |
-| ScoreEvidence | score, modelSha256, modelVersion, scorerKind | Numeric probability and model identity; kind from run definition/config |
+| FeatureEvidence | schemaVersion, schemaSha256, orderedDefinitions[], values, effectiveValues, removedIndices | Definitions: index, name, definition, definitionVersion; effectiveValues are derived post-mask values before logistic StandardScaler, not standardized model inputs |
+| ScoreEvidence | score, modelFingerprint, modelArtifactPhysicalHash, modelVersion, scorerKind | Numerical model fingerprint and physical artifact identity are independently referenced |
 | OwnershipEvidence | isOwner, ownerRank, rivalSourceId, rivalScore, rivalMargin, policyVersion | Null singleton rival remains available-null |
 | ResolutionDecision | sourceId, acceptedTargets, decisionType, decoderVersion | Actual emitted set, never top-score approximation |
 | CandidateDisposition | score, isOwner, threshold, thresholdMargin, accepted, rejectionReason, decoderVersion | NONE/BELOW_THRESHOLD/LOST_OWNERSHIP; reserved SET_POLICY not displayed as observed |
@@ -394,10 +397,12 @@ For compact selectors below, `A`, `B`, `C` mean the corresponding PASS_*_RUNS.js
 |---|---|---|
 | Context bundleRef/platform/manifestKey | Bundle file and keys in `.platforms`/`.manifests`; SHA of loaded bundle is D, not an embedded producer fact | C/D |
 | experimentId/manifestDisposition/producerCommit | `M.experiment_id`, `.disposition`, `.git.commit_sha`; dirty from `.git.dirty` | C |
-| datasetFingerprint/splitFingerprint/origin/class | `M.provenance.dataset_fingerprint`, `.split_fingerprint`, `.dataset_track`; `M.evidence.class` | C |
+| executionDatasetFingerprint/splitPlanFingerprint/origin/class | `M.provenance.dataset_fingerprint`; for C4 public, `.split_fingerprint` is the split-plan identity, not role membership; `.dataset_track`; `M.evidence.class` | C; interpret split identity by manifest stage |
+| datasetFingerprint/splitFingerprint | C4 selected role result or capsule `.dataset_fingerprint` / `.split_fingerprint`; C3 selected resolution context/capsule; cross-check stage lineage and scoped entities | C selected / L complete; never substitute execution-level fingerprints for role membership |
 | definitionName/role | C4 `R.experiments[name].roles[role]`; C3 summary keys calibration/test | C/D |
-| runHandle/occurrenceHandle/search destinations | Composite scope handles, Section 19 | D; new read index G |
-| Source/target entity fields | `EntityRecord`: entity_id, source, business_name, business_address, country, schema_version; C4 E.source_json and E.candidate_evidence_json[].target | C for examples, L for all entities; C3 raw records G from compact summary |
+| pass/observationVariant/workloadSize/repetition/artifactPrefix | Pass from the pinned PASS_B/PASS_C bundle; ordinary definition/role, named robustness/perturbation path, or scale workload size and ScaleObservation.repetition. Prefix is a validated manifest-relative path bound to those identities, not a guessed location. Retained scale products bind repetition 2 only | C/L inputs and D path binding; unavailable for unspecified resources |
+| runHandle/observationHandle/occurrenceHandle/search destinations | Composite scope handles, Section 19; definitionSha256 from the selected definition/result; model/retrieval identities from the rows below | D; new read index G |
+| Source/target entity fields | `EntityRecord`: entity_id, source, business_name, business_address, country, schema_version; decode C4 E.source_json and E.candidate_evidence_json JSON strings, then validate decoded objects/targets | C for examples, L for all entities; C3 raw records unavailable from compact summary |
 | normalized fields/version | `NormalizedEntity` and normalized.parquet; source normalizer is code, not recorded bytes | L/G; schema can be inspected C |
 | pairKey/targetId/targetSource | RetrievalCandidate.s1_id/target_id/target_source, scoped to context; selected snippets agree across stages | C selected; L complete |
 | viewMask/laneEvidence/country | RetrievalCandidate.retrieval_view_mask/lane_evidence/country; `lane, rank, similarity` | C snippets; L candidates.parquet |
@@ -405,9 +410,10 @@ For compact selectors below, `A`, `B`, `C` mean the corresponding PASS_*_RUNS.js
 | config/fitEvidence/warnings | RetrievalConfig fields and FitEvidence fields in retrieval-definition JSON / C2 reports/manifests; C4 graph definition outputs | C only where embedded, otherwise L/G; do not assume capsule includes them |
 | representationOrigin | C4 retrieval_definition.json `.origin.origin_by_pair`; removed by compact(); raw representation adapter described in code | L/G per pair; no fabricated sixth mask bit |
 | feature schema/version/definitions | `features/reference.py:REFERENCE_SCHEMA`; FeatureDefinition name/definition/definition_version; schema SHA checked against row/capsule | C contract, L serialized feature_schema; no casual alias of physical hash to schema SHA |
-| values | FeatureRow.values or feature columns ordered by c3_storage.DEFINITIONS['features'] | L/G; no values in C4 candidate snippets |
-| removedIndices/effectiveValues | ExperimentDefinition.mask / GROUPS; zero-mask of validated base values | C/D if values exist; otherwise G |
-| score/model identity/version | ScoredCandidate.score/model_sha256/model_version; C4 snippet `.score`; C3 top_rejected disposition carries score and capsule model_sha256 | C selected, L full; C3 absent modelVersion remains unavailable unless supported by manifest |
+| values | FeatureRow.values or feature columns ordered by c3_storage.DEFINITIONS['features']; C3 resolve-role/features.parquet; C4 graphs/{definition.retrieval}/{role}/features.parquet, not {definition}/{role}/features.parquet | L; no values in C4 candidate snippets |
+| removedIndices/effectiveValues | ExperimentDefinition.mask / GROUPS; zero-mask of validated base values without reordering the 59 features; logistic standardization follows masking | C/D if values exist; otherwise unavailable |
+| score/modelFingerprint/modelVersion | ScoredCandidate.score/model_sha256/model_version; C4 snippet `.score`; C3 top_rejected score and capsule model_sha256; C4 model_identity.json.model_sha256 is the numerical fingerprint | C selected, L full; absent version remains unavailable |
+| modelArtifactPhysicalHash | Manifest artifacts[{definition}/model.json].sha256 for C4; role result.model_sha256 and Atlas run identity use this physical hash, unlike score/capsule.model_sha256; C3 fit/model.txt hash matches its scorer fingerprint | C metadata / L bytes; check each identity against its actual source |
 | scorerKind | C4 definition.scorer; C3 validated fit stage/config | C/D where context explicit |
 | ownership fields | OwnershipResult.is_owner/owner_rank/rival_s1_id/rival_score/rival_margin/ownership_policy_version | C selected / L full |
 | disposition fields | CandidateDisposition.score/is_owner/threshold/threshold_margin/accepted/rejection_reason/decoder_version | C selected / L full |
@@ -438,6 +444,8 @@ For compact selectors below, `A`, `B`, `C` mean the corresponding PASS_*_RUNS.js
 
 Model fingerprint and artifact physical hash can differ. C4 numerical model identity is emitted by ResearchScorer.fingerprint; the model.json file's physical hash is a manifest artifact hash. Never use them interchangeably. Likewise a logical score fingerprint is not scores.parquet's byte hash.
 
+C4 public execution fingerprints describe the whole recipe and split plan. For reference/test, the role dataset fingerprint is `603e95b6391cb38b2c2ea0d3810b700b0b8c95e4dfc958efa10fd7d7cd84b89a` and membership fingerprint is `fb589ce91f4d7cb0c51add29fba22c088c5aa7259cd8fd4469c2e1dcfc275bde`; they differ from manifest provenance (`79f52a08c24c51456d095cdc053265658dee7956756a839ce54ae754e83cd68e` / `e9fcfbcff10d476218bb94c0565ff44250d2290edb54b9899f4afdc51f3641f2`). Perturbation and scale observations require their own membership and artifact prefix even inside the same manifest. A manifest key alone is not a case context. Unknown required identity prevents enrichment rather than relaxing the join.
+
 ## 16. BACKEND READ GAPS
 
 These gaps are observed from code, retained bytes and CLI boundaries. No API or exporter is implemented in this task. “Backend read gap” includes output-delivery and indexing gaps even where the computation already exists.
@@ -445,21 +453,21 @@ These gaps are observed from code, retained bytes and CLI boundaries. No API or 
 | ID | Gap | Affected interaction | Slice 1 disposition / later requirement |
 |---|---|---|---|
 | G01 | No HTTP inspection/read service | Every remote case/feature/artifact lookup | Recorded adapter; future read service separate decision |
-| G02 | No complete public case/candidate index | Arbitrary source and target search | Index supplied examples only; completeness label |
-| G03 | Full candidate, normalized, feature, score, owner/disposition/decision Parquet absent from Git | Complete case reconstruction and feature values | Explicit missing sections; later consume verified local outputs |
-| G04 | C3 explain returns capsule + five rejects, not entities/features/all candidates | “Full trace” from explain JSON alone | Mark bounded/partial; do not call it complete |
-| G05 | C4 reference Atlas retains 7 examples of 21 errors | Complete Failure Atlas list | Counts plus retained-example browser; full atlas.parquet needed |
-| G06 | Compaction removes per_query and transition membership | Metric drilldown; error movement case list | Aggregate comparison only; paired typed rows needed |
+| G02 | No complete frontend case/candidate index | Arbitrary source and target search | Data for a full scoped index exists locally; implement the index in C-UI0; committed-only coverage stays bounded |
+| G03 | Full candidate, normalized, feature, score, owner/disposition/decision Parquet absent from Git, present locally | Complete case reconstruction and feature values | Verified local input can close data availability in C-UI0; committed-only sections remain missing |
+| G04 | C3 explain returns capsule + five rejects, not entities/features/all candidates | “Full trace” from explain JSON alone | Explain stays bounded; full local stage join supplies complete cases independently |
+| G05 | Compact C4 reference Atlas retains 7 examples of 21 errors; local Atlas has all 21 | Complete Failure Atlas list | Local atlas.parquet closes data availability; Atlas route remains deferred |
+| G06 | Compaction removes per_query; transition membership is not emitted as a separate artifact | Metric drilldown; error movement case list | Local result reports retain per_query; paired attribution tables permit a labelled D membership derivation over the union of error pairs, with NOT_ERROR for an absent error row, not a new measured stage |
 | G07 | Compaction removes origin_by_pair | Per-candidate transliteration challenger representation | Origin unknown; local retrieval_definition.json required |
 | G08 | Compact perturbations retain changed IDs, not before/after sets | Robustness case diff | IDs with coverage; local observations and stages needed |
-| G09 | Raw scale observations absent | Repetition scatter/distribution and precise stage contribution | Median/range table/plot only; observations.parquet needed |
-| G10 | No browser-resolvable artifact bytes/query endpoint | Current physical verification, preview/download | Declared metadata versus recorded check; attachment/export transport later |
+| G09 | Raw scale observations absent from compact bundles, present locally | Repetition scatter/distribution and scoped stage timing | Local observations.parquet closes raw measurement availability; only final repetition has retained full stages; no additive stage contribution claim |
+| G10 | No browser artifact delivery/query interface | Browser verification, preview/download | Host physical verification is possible now; adapter/export transport remains to implement; browser verification requires bytes actually delivered |
 | G11 | External parent digests may have no loaded producer | Complete lineage expansion | Unresolved identity nodes; never fabricated ancestry |
 | G12 | No run registry/lifecycle/read stream | Live local run, refresh, progress, scheduling | Future only; no working live selector |
 | G13 | No feature contributions/counterfactual explanations | “Why this score?” causal account | Values/definitions only; exclude SHAP/LLM narrative |
 | G14 | No actual frontend-normalized adapter/export schema | Convenient stable UI reads from multiple file layouts | Proposed recorded mapping/index layer; no endpoints assumed |
-| G15 | C3 compact example lacks raw source/target records | Complete source pane for high-score tie demo | ID with unavailable raw fields; validated fixture/run export needed later |
-| G16 | No complete target competitor view from a rival snippet | All rival inspection | One recorded rival only; full ownership/score tables required |
+| G15 | C3 compact example lacks raw source/target records; local entities retain them | Complete source pane for high-score tie demo | Verified local stage join closes data availability without fixture regeneration |
+| G16 | No complete target competitor view from a rival snippet | All rival inspection | Full local ownership/score tables support a scoped target index; compact-only remains one rival; full expansion outside C-UI1 |
 
 Capability presence is per context and per resource, not a global boolean inferred from one successful example. Local bulk files solve data availability; they do not automatically solve browser access or stable query interfaces. Fixture code alone can reproduce invented records, but a generated record is not recorded-run evidence until its identities are checked against the chosen run. Do not solve G03 by re-training silently during frontend build.
 
@@ -477,7 +485,7 @@ Committed-evidence ingestion:
 4. Preserve literal scalar values, nulls, schema order and canonical reasons. Carry exact bundle pointers for every presented evidence group. Do not substitute manifest metrics for missing case outcomes.
 5. Return bounded/summary coverage by default where full stage bytes are absent. Cache by loaded content identity plus complete context; invalidate on bundle-byte change.
 
-Optional later local recorded-artifact ingestion consumes **already produced** validated output directories, checks original SHA/size/path containment and stage schemas, joins all stages, and provides values/full cases. It remains recorded mode, not live mode. A later reviewable export may package bounded typed JSON suitable for browser consumption, with source references and coverage. Do not stage full models/Parquet by default or rewrite current bundles just to simplify UI access.
+Optional local recorded-artifact ingestion is part of the C-UI0 input policy, before any UI. It consumes **already produced** allowlisted directories in Section 30, checks original SHA/size/path containment and stage schemas, joins all stages, and provides values/full cases. If files are not supplied in the implementation environment, committed-only coverage remains explicit. It remains recorded mode, not live mode. A reviewable export may package typed JSON suitable for browser consumption, with source references, delivery hash and coverage. Do not stage full models/Parquet by default or rewrite current bundles just to simplify UI access.
 
 Adapters reject contradictory duplicate records rather than selecting the prettier value. They must not recompute model predictions, ownership or attribution to fill missing evidence. Deterministic consistency checks are permitted and labelled checks; missing proof stays missing. Unavailable data is typed, not hidden behind network-looking loaders.
 
@@ -494,11 +502,14 @@ Every analytic link identifies context. Opaque IDs are percent-encoded as single
 | Handle | Canonical inputs |
 |---|---|
 | run | bundle path + loaded bundle physical SHA + platform + manifest key |
+| observation | run + pass + definition identity/model identities + role + variant/perturbation name + workload size/repetition when applicable + role dataset/membership fingerprints + retrieval identity + artifact prefix; explicit null for unavailable optional fields |
 | experiment | run handle + definition name |
 | artifact | run handle + manifest-relative artifact path + declared physical SHA |
-| case | run + definition/role + source ID + target ID + error type for failure selection |
+| case | observation handle + source namespace/ID + target ID + error type for failure selection |
 
 Embedding bundle-byte identity pins a deep link to that recorded version. A later bundle version cannot silently serve a different case under the same handle. The adapter may identify a replaced bundle and offer an explicit context-switch link, not an automatic redirect to newer measurements.
+
+Case URLs additionally pin `observation={handle}`. Ordinary definition/role examples below may resolve to that handle only when unique, then canonicalize. Conflicting run/platform/definition/role/variant parameters produce CONTEXT_MISMATCH; never use a platform parameter to override a pinned run. C-UI1 accepts only ordinary C3 test and C4 reference/test observations. Perturbation/scale handles are distinct and unsupported by that UI, rather than silently routed to ordinary test. Local payloads/exports pin their physical delivery hashes in the adapter cache and observation resolution; same manifest metadata cannot validate a changed payload.
 
 | State | URL representation |
 |---|---|
@@ -543,6 +554,7 @@ Selected candidate remains selected when a filter excludes it; show “Selected 
 | UNDEFINED_METRIC | “Undefined” plus existing reason/population; null never rendered as 0 or 100% |
 | EMPTY_FILTER | Zero matches within known loaded rows; counts/scope retained; Clear filters |
 | INVALID_CONTEXT_OR_VERSION | No automatic fallback to a different recorded run; choose explicitly from available contexts |
+| CONTEXT_MISMATCH | Pinned observation conflicts with run/platform/definition/role/variant or field identity; block enrichment and retain the requested scope for explicit correction |
 
 Transport failures may offer retry; permanent missing-capability states offer navigation or evidence requirements. No exception text dumps credentials or treats local producer paths as downloadable URLs. Errors are selectable, screen-reader announced and technically specific. An isolated malformed artifact does not require discarding unrelated validated evidence.
 
@@ -620,7 +632,7 @@ Use tables for stage/error counts, failure movements, lane evidence/overlap, coh
 
 ## 25. Ninety-second demo
 
-This demo is feasible from committed evidence with honest partial coverage. It uses two deliberately different recorded contexts; a later complete-artifact demo may remain within one context only after an actual suitable case is verified. No invented demo scores or fake local replay.
+This is a later whole-product demonstration, not C-UI1 scope or authorization for additional routes. It is feasible from committed evidence with honest partial coverage. It uses two deliberately different recorded contexts; a complete-artifact demo may remain within one context only after an actual suitable case is verified. No invented demo scores or fake local replay.
 
 | Time | Action | Engineering fact proved |
 |---|---|---|
@@ -635,26 +647,39 @@ The first accepted case is intentionally also an error; this proves acceptance i
 
 ## 26. Frontend Slice 1 recommendation
 
-Build a **read-only recorded-evidence product slice** across the shared shell and all required routes. Primary Explorer uses the seven C4 retained Atlas examples plus the bounded C3 explain example; completeness varies visibly. Do not wait for an inspection API, and do not pretend the compact bundles supply every stage.
+The first implementation sequence is **C-UI0 — Recorded Evidence / Adapter Preflight**, followed only after it passes by **C-UI1 — Resolution Explorer only**. No frontend is implemented or authorized by this audit. Local recorded stages are usable inputs to preflight, not a reason to change backend policy.
 
-Slice 1 includes: scoped case entry, candidate selection and gate ledger, selected trace, lane/raw/provenance details, schema-only feature tab, aggregate/bounded Failure Atlas, twelve experiment catalogue entries with recorded reference comparisons, scale medians/ranges/table, artifact metadata/one-hop lineage table and scoped global search. Required routes have substantive evidence-backed content, not disabled-page placeholders. Small contention diagram and polished plots are secondary to trace correctness.
+C-UI1 includes only the shared context shell needed by `/explorer`, scoped case catalogue/search, source and actual emitted set, native Candidate Resolution Ledger, candidate selection, independent stage trace, retrieval/features/raw/provenance tabs, recorded truth and attribution overlays, scoped URLs/history, keyboard access, responsive collapse and explicit unavailable/coverage states. Inline evidence references, artifact metadata and verification state support the selected case; they do not require a standalone Evidence route. When verified local stages are attached, full candidate/feature/raw values are allowed. Committed-only delivery shows seven C4 Atlas examples and the bounded C3 explain example with their own limits; it never upgrades snippets to full cases. Search covers only loaded contexts/cases/candidates.
 
-Slice 1 excludes: arbitrary dataset browsing, complete per-pair features, full competitor expansion, per-transition case members, perturbation before/after set diff, raw repetition plots, risk-coverage curves, original model downloads, current original-byte verification and live execution. Every exclusion has a Gxx mapping and a specific recovery path.
+C-UI1 excludes standalone Failure Atlas, Experiments, Scale and Evidence routes, cross-experiment comparison interfaces, perturbation views, full competitor expansion, graphs and visual polishing, polished plots, global artifact search, downloads, live execution and model explanations. Later route designs and visualization tables in this document remain product scope, not this gate's scope. Do not enable navigation to these routes or build disabled-page substitutes before the Explorer passes.
 
-A richer Slice 1 extension may consume validated existing local outputs without changing backend policy. Its prerequisite is actual recorded-artifact access/export with hashes and coverage, approved as a subsequent implementation task. It must never regenerate or alter baseline evidence behind the UI to make screenshots look complete.
+C-UI1 passes only when reload/back/forward preserve full observation and selection; acceptance tests show the actual accepted FP, C3 tie, distinct C4 same-ID observation, retrieval miss and empty set; a bounded 8-of-63 case stays bounded in committed-only mode; complete local delivery shows the full 63 without mixing modes; values are referenced or unavailable; acceptance and labelled correctness never share one status; and keyboard/zoom/stacked-pane interactions retain access to the ledger and details. This gate does not require visual polish. A later task must explicitly authorize the other destinations after this acceptance result.
 
 ## 27. Implementation sequence for a later agent
 
-1. Freeze this product contract and confirm which recorded outputs, if any, will be supplied. Inventory exact bundle versions and contexts; do not assume the Windows output directories exist in an implementation environment.
-2. Implement domain availability/reference types and RecordedEvidenceAdapter, validating schemas and context separation. Build inspectable indexes from committed evidence and document actual coverage. This is the first functionality gate, before visual polish.
-3. Implement shell, scoped URLs, case catalogue and native candidate ledger. Show a real empty set, a retained accepted false positive, the C3 high-score ownership tie and a no-candidate retrieval miss.
-4. Add trace/details, fixed wording templates, evidence navigation and keyboard semantics. Missing feature values stay missing; validate all status distinctions.
-5. Add bounded Failure Atlas, experiment catalogue/detail, logistic interval and measured scale views using retained fields. Preserve counts, populations and limitations.
-6. Add artifact occurrence browser, declared lineage, external identity handling and verification-status separation; global search indexes only supplied objects.
-7. Apply visual system, responsive collapse and meaningful approved charts. Verify deep links, focus, contrast, zoom and malformed/partial evidence behaviors.
-8. Only as a separate extension, provide verified local recorded-output ingestion/export; then unlock complete features/cases and raw observations. Live read service and model explanation research remain independent future work.
+1. Implement and pass C-UI0 below, with no UI and no baseline/evidence mutation. Record the exact attached input inventory and deterministic test results.
+2. Implement only Section 26's C-UI1, using the preflight domain objects and coverage. Pass its functional, identity and accessibility checks.
+3. Stop for a subsequent task boundary. No Failure Atlas, Experiments, Scale, standalone Evidence or visual polishing is authorized before C-UI1 passes. Live read service and explanation research remain separate future work.
 
 No instruction in this sequence authorizes implementation during the present documentation task. A later frontend task should use meaningful fixture-backed acceptance checks for stage/context correctness; this documentation commit requires documentation and evidence-mapping review, not a full retraining/reproduction suite.
+
+### 27.1 C-UI0 exact acceptance gate
+
+All criteria are mandatory. This gate is specified, not implemented or passed by the present audit.
+
+| Criterion | Required input, behavior and acceptance evidence |
+|---|---|
+| Exact committed inputs | Pin physical hashes of `docs/evidence/PASS_B_RUNS.json` and `PASS_C_RUNS.json`, their documented v2/v1 schemas, both platform keys and selected embedded manifests. PASS_A_RUNS.json is optional retrieval context, never a substitute source for C3/C4 decisions. Reject unknown versions/shapes with typed issues |
+| Exact optional LOCAL inputs | Explicit allowlist: Section 30's current C3 roots (18 manifests/platform) and C4 public/scale roots (two/platform). Attach only selected manifested artifacts and separately identity-checked retained summaries. Use current ordinary C3 resolve-test plus fit/model and matching evaluate-test artifacts, and C4 graphs/reference/test plus reference/model*, reference/definition.json and reference/test/* for complete Explorer contexts. Inventory other definitions/perturbations/scale as separate contexts; no automatic latest-run scanning, training, regeneration or implicit fixture reconstruction |
+| Manifest and byte checks | Match local manifests to the corresponding embedded bundle manifests; verify C3 physical manifest/summary identities using `retained_file_identities`, C4 manifests using `manifest_file_sha256`. Validate experiment schema, configuration fingerprint and declared DAG, COMPLETED disposition, producer and recorded source inventory. Current source inventory has 44 entries matching baseline bytes. For every attached artifact enforce root containment after path resolution, size and SHA256; reject traversal/escaping symlinks, missing/tampered files and contradictory duplicates. Older/dirty/failed/probe runs cannot enter this allowlist |
+| Schema and field checks | Validate exact stage schemas, types, enums, metadata and uniqueness, including 59 ordered features, stored float64 values and the float32 model boundary. Decode/validate Atlas JSON strings and capsule/result documents. Preserve null, empty string and zero. A malformed optional resource becomes malformed, never an empty valid resource; an identity contradiction blocks its joined observation |
+| Context identity | Build Section 19's run/observation/occurrence handles before joins. Separate execution recipe/split-plan from role dataset/split membership; pass/platform/definition/model/retrieval/role/variant/size/repetition/artifact prefix cannot leak. Preserve numerical model fingerprints versus physical model hashes with the exact C4 mapping in Section 15. Same IDs, equal logical fingerprints and identical physical bytes in different occurrences do not collapse contexts |
+| Domain mapping | Implement versioned mappings from Section 15, with references for each evidence group. Check source/target namespaces, pair key uniqueness and complete stage pair-set agreement when all stages are attached; join actual resolution sets, capsules, truth and attribution only within the validated observation. Deterministic ownership/decoder/set consistency checks are allowed but never fill missing recorded outputs. C4 ablations read the declared retrieval graph's base features; masked values are labelled derived and before logistic standardization |
+| Coverage and absence | Track counts/extent per case, candidate list, stage, evaluation and payload, not one global badge. Full ordinary local test contexts have C3 16 cases/218 candidate pairs and C4 reference 133 cases/2,861 pairs per platform. Committed-only C4 has seven reference Atlas examples for 21 error pairs; each nested candidate list stays bounded by its declared count. C3 explain has at most five rejects. Distinguish available-empty, available-null, not_retained, not_applicable, malformed and verification_failed. No unavailable scores/features/sets become zero/empty or inferred success |
+| Honest verification and delivery | Distinguish declared hash, recorded prior check, current host byte check, delivered/export byte check and logical identity check. Bundle fragments are references, not original bytes. Any browser delivery/export pins its own physical hash and carries source hashes/pointers and coverage; host verification alone cannot claim browser-delivered originals. Local files remain ignored/LOCAL and are not staged as public artifacts |
+| Deterministic adapter tests | Repeated reads and row-order permutations produce identical canonical handles, ordering, references and coverage. Tests isolate C3/C4 repeated `test-amb-z` IDs and both platforms; reject mismatched role/variant/model identity and conflicting URL parameters; distinguish physical/numerical model hashes; reject tampered bytes, escaping paths, malformed JSON, duplicate pairs and changed feature order; partial stage sets remain partial and cannot pass complete-stage validation; preserve null/empty/zero; distinguish missing from empty; retain bounded 8-of-63 snippets; keep same-byte artifact occurrences separate; scope perturbations independently; never map repetition-2 stage files to scale repetitions 0/1. Small synthetic test fixtures are test inputs, not recorded-run observations |
+| Semantic regression cases | Verify threshold inclusive at .640 and below-threshold precedence using tests; verify actual C3 high-score tie/empty set/explicit-ambiguity attribution, C4 same-ID .13914703328081957 score, accepted FP test-own-a, and zero-candidate retrieval FN test-q-0015 from supplied evidence. Missing stages prevent a constructed trace, not create a new failure. Reference/logistic aggregates retain exact precision and interval crossing zero. Adapter tests execute no fit/predict/reproduce or recorded-output writes |
+| Gate result | Produce an explicit pass/fail record listing loaded bundle hashes, local manifest/artifact occurrences, supported observation handles, coverage/unsupported resources, verification results and deterministic test results. A committed-only pass must declare bounded coverage; a LOCAL pass must prove the full case counts above. No unresolved identity/schema contradiction may be downgraded to coverage. Proceed to C-UI1 only after all applicable checks pass; no UI/API/backend change is part of preflight |
 
 ## 28. Acceptance criteria for product-spec freeze
 
@@ -673,7 +698,7 @@ No instruction in this sequence authorizes implementation during the present doc
 - Rendering/accessibility/deep-link rules are concrete enough for an implementation agent to proceed without redefining the product.
 - This task changes exactly this specification file and may create one local documentation commit; no push or implementation.
 
-Specification outcome: **PASS for a bounded recorded-evidence design**. Complete-case frontend capability is explicitly gated by G03/G14/G15, not represented as already delivered. This PASS is not frontend acceptance, backend API completion, fresh metric reproduction or production readiness.
+Specification outcome after implementation-readiness corrections: **PASS**. The compact-only design remains bounded; existing validated LOCAL stages can supply complete cases through the unimplemented C-UI0 adapter/delivery gate. This PASS is not C-UI0/C-UI1 acceptance, backend API completion, fresh metric reproduction or production readiness.
 
 ### 28.2 Later implementation acceptance examples
 
@@ -682,7 +707,7 @@ Specification outcome: **PASS for a bounded recorded-evidence design**. Complete
 | C3 high-score tie | test-amb-z / test-amb-target shows LOST_OWNERSHIP, owner rank 2, zero margin and empty result; explicit ambiguity remains separate attribution |
 | C4 same ID | Shows recorded 0.139147 score and BELOW_THRESHOLD, never C3's score |
 | C4 accepted false positive | test-own-a emitted target remains accepted and labelled FP; no green correctness claim |
-| C4 retrieval miss | test-q-0015 candidate_count=0, truth target absent, score unavailable, RETRIEVAL FN |
+| C4 retrieval miss | test-q-0015 candidate_count=0, labelled truth target absent from retrieval, score unavailable, RETRIEVAL FN |
 | Bounded 63-candidate case | test-q-0006 shows 8 retained examples of 63, not a complete filtered graph |
 | Feature evidence absent | Exact 59 schema definitions visible, values unavailable, no fabricated zeros or importances |
 | Logistic comparison | Correct delta/interval/query count and DIAGNOSTIC_ONLY; no promotion button/winner |
@@ -694,7 +719,7 @@ Specification outcome: **PASS for a bounded recorded-evidence design**. Complete
 
 Do not introduce competition/team/origin narratives or previous project names absent from current authoritative material. Concord is Adithya Sanjeevi's individual project. Do not reconstruct deleted material.
 
-Do not fabricate production customers, real company records, production QPS, uptime, SLOs, incidents, cluster health, user activity or environmental/business outcomes. Synthetic records and controlled workloads remain explicitly identified.
+Do not fabricate production customers, real company records, production QPS, uptime, SLOs, incidents, cluster health, user activity or environmental/business outcomes. Synthetic records and recorded workloads remain explicitly identified, including uncontrolled timing conditions.
 
 Do not invent API endpoints, a live run registry, full public stage tables, complete failure lists, unseen raw records, feature values, score causes, SHAP values, attention heatmaps, natural-language AI explanations, counterfactual replays, automatic promotion, tuned thresholds, causal ablation conclusions, general calibration or stability labels.
 
@@ -704,4 +729,90 @@ Do not fabricate C4 OWNERSHIP/DECODING errors because unit tests or C3 have exam
 
 Do not present recorded retention verification as a current hash check on absent bytes, compact fragment identity as original-file identity, arbitrary parent digests as files or a conceptual pipeline as the declared DAG. Do not overwrite original C1–C4 artifacts or metrics.
 
-Do not write frontend code, scaffold React/Next.js, modify backend source, add APIs, push, or create further commits in this task. The sole permitted deliverable is `docs/CONCORD_RESOLUTION_EXPLORER_PRODUCT_SPEC_V1.md`; the optional single commit message is `docs: define Concord Resolution Explorer product specification`. Stop after this specification and its verification/report.
+Do not write frontend code, scaffold React/Next.js, modify backend source, add APIs, push, merge or tag in this audit. The sole permitted deliverable is `docs/CONCORD_RESOLUTION_EXPLORER_PRODUCT_SPEC_V1.md`; the single correction commit message is `docs: harden Concord Resolution Explorer specification`. Stop after this specification and its verification/report.
+
+## 30. Read-only local recorded-output inventory and audit disposition
+
+### 30.1 Inventory identity and verification
+
+Inventory date: 4 October 2026. No artifacts were regenerated, retrained or modified. Scan included ignored output directories and temporary files, excluding Git/environment/cache internals. Found 224 manifests under `outputs/`, containing 4,866 registered artifact occurrences, plus one temporary negative-test manifest. All 224 output manifests passed current manifest/configuration/DAG validation; every registered artifact passed physical SHA256, size and root-containment checks. This verifies their declared bytes, not that all runs belong to the current baseline or that a browser can load them.
+
+The current neutral roots contain 52 manifests / 1,306 registered artifacts, of which C3/C4 are **40 manifests / 1,224 artifacts**. All current manifests are COMPLETED, record clean producer `0ead99612ce93d47e51d748d3ecc01a026a92864`, and retain a 44-entry implementation-source inventory matching current baseline bytes. Their embedded copies match the public bundles. Physical C4 manifest hashes match PASS_C_RUNS.json; all 63 C3 retained-file identities per platform (manifests, summary and logs) also match PASS_B_RUNS.json. Exact metadata schemas were checked for all 694 current C3/C4 Parquet files (114 C3, 580 C4). Full ordinary test joins on both platforms additionally validated typed stage rows, pair membership, capsule identities, decoder dispositions and emitted-set membership: C3 37 entities / 16 sources / 218 pairs, C4 reference 399 entities / 133 sources / 2,861 pairs. Model numerical identities and decoded Atlas source records were cross-checked. These are read-only consistency checks, not fresh metric reproduction or adapter implementation.
+
+The inventory is manifest-indexed to preserve exact per-artifact reporting without duplicating thousands of lineage entries. **For every registered artifact**, its exact path is `{root}/{manifest key}/{artifact key}`; its stage is `.artifacts[artifact key].lineage.stage`; producing identity is the selected manifest's git/provenance/configuration plus that artifact's lineage code/schema/parents; pass/platform is determined by the root table below. Each entry retains its own SHA/size and occurrence even when bytes repeat. The existing manifests are the exhaustive per-artifact path/stage/producer inventory, not inferred wildcard contents. The table's verification, safety and LOCAL policy applies to each entry. Supplemental unmanifested files have separate treatment below.
+
+| Root (repository-relative) | Pass / platform | Manifest keys / registered artifacts | Verification and consumption policy for every entry |
+|---|---|---|---|
+| `outputs/neutral-current-pass-b-windows` | C3 / windows | Section 30.2's 18 keys / 166 | Hash/size/manifest/schema checks possible and performed as above; eligible for explicit C-UI0 ingestion after domain checks; ignored, LOCAL |
+| `outputs/neutral-current-pass-b-linux` | C3 / ubuntu_wsl | Same 18 keys / 166 | Same; platform remains distinct; ignored, LOCAL |
+| `outputs/neutral-current-pass-c-windows` | C4 / windows | public: 412; scale: 34 | Same; numerical model identities, variants and repetitions remain scoped; ignored, LOCAL |
+| `outputs/neutral-current-pass-c-linux` | C4 / ubuntu_wsl | public: 412; scale: 34 | Same; ignored, LOCAL |
+| `outputs/neutral-current-pass-a-windows`, `outputs/neutral-current-pass-a-linux` | C1/C2 retrieval / respective platform | Each six manifests / 41 | Current producer and byte checks pass; optional retrieval evidence only, never C3/C4 decision replacement; ignored, LOCAL |
+
+“Eligible” means safe read-only input to the future adapter with C-UI0 validation, not an existing adapter or automatic authority over a compact context. Do not stage any output/model/Parquet files. Missing local files in another checkout revert only those resources to unavailable coverage.
+
+### 30.2 Exact C3 manifest index and stage files
+
+Each key below denotes `{C3 root}/{key}/manifest.json`. The embedded counterpart is `PASS_B_RUNS.json.platforms[platform].manifests[key]`. Every artifact key in that manifest is an inventory entry with Section 30.1's fields and policy.
+
+| Manifest keys (each key is a separate occurrence) | Artifact count per key | Recorded stages |
+|---|---|---|
+| evaluate-calibration-calibration, evaluate-calibration-failures, evaluate-calibration-policy, evaluate-calibration-quality | 8 | Evaluation labels, ambiguity labels, quality, calibration, failure attribution/report, policy check, evaluation report |
+| evaluate-test-calibration, evaluate-test-failures, evaluate-test-policy, evaluate-test-quality | 8 | Same stages, test membership |
+| train-calibrate | 8 | Same evaluation artifact family, declared training/calibration context |
+| fit, fit-repeat | 13 | Ingest, normalize, retrieve/freeze, features/schema, negatives, training labels/report, split context/policy, model fit/identity |
+| negatives | 11 | Same training input stages without fitted model/identity |
+| resolve-calibration, resolve-repeat, resolve-test | 14 | Ingest, normalize, retrieve/freeze, features/schema, split context/policy, scores, ownership, dispositions, resolutions, capsule/report |
+| retrieval-calibration, retrieval-test, retrieval-train | 5 | Ingest, normalize, retrieve/freeze, retrieval evaluation |
+
+Exact complete-case `resolve-test` artifact keys: `entities.parquet`, `normalized_entities.parquet`, `retrieval_candidates.parquet`, `retrieval_freeze.json`, `feature_schema.json`, `features.parquet`, `scores.parquet`, `ownership.parquet`, `candidate_dispositions.parquet`, `resolutions.parquet`, `resolution_evidence.json`, `context.json`, `split_plan.json`, `report.json`. Model inputs: `fit/model.txt`, `fit/model_metadata.json`, plus that fit manifest's schema/context/training provenance. Matching `evaluate-test-*` keys: `ambiguities.json`, `calibration.json`, `evaluation_truth.json`, `failure_attribution.parquet`, `failures.json`, `policy.json`, `quality.json`, `report.json`. Do not treat separate evaluator occurrences as additional cases.
+
+Supplemental files in each current C3 root: `summary.json`; `inputs/{ambiguities.json,calibration-truth.json,calibration.parquet,entities.parquet,splits.json,test-truth.json,test.parquet,train-truth.json,train.parquet}`; and `logs/{command}.{stderr.txt,stdout.json}` for evaluate-calibration-{calibration,failures,policy,quality}, evaluate-test-{calibration,failures,policy,quality}, explain, export-evidence, fit, fit-repeat, inspect, model-fingerprint, negatives, resolve-calibration, resolve-repeat, resolve-test, retrieve-calibration, retrieve-test, retrieve-train, train-calibrate. Summary/log identities are retained and physically verified through PASS_B_RUNS.json; they are C3 LOCAL summary/operational evidence, not additional full stages. Input copies are unmanifested: producer context is recoverable only through matched manifested copies or logical dataset checks. Prefer manifested entities/truth/split files; naked inputs are not automatically eligible recorded-run evidence. All supplemental paths remain ignored/LOCAL.
+
+### 30.3 Exact C4 artifact families
+
+Each current C4 root has `public/manifest.json` and `scale/manifest.json`, indexed exhaustively by the corresponding PASS_C_RUNS.json platform manifests. For every path below, exact stage/producer/hash/schema identity is the manifest entry; paths are relative to that manifest directory. All are ignored/LOCAL, eligible only with the observation and domain checks above.
+
+| Exact path family | Recorded stage/data and scope |
+|---|---|
+| public root: entities.parquet, split_plan.json, truth_train.json, truth_calibration.json, truth_test.json | Raw recipe entities, split plan and role truth; execution scope is not role dataset membership |
+| `graphs/{reference,k1,no_reverse,transliterated_name}/{train,calibration,test}/{entities.parquet,normalized.parquet,candidates.parquet,features.parquet,retrieval_definition.json,retrieval_report.json}` | Role ingest/normalization/retrieval/features and config/fit/origin/report; 59 base values before definition masks |
+| `graphs/reference/perturbation-{case,spacing,punctuation,token_order,transliteration,competition}/{entities.parquet,normalized.parquet,candidates.parquet,features.parquet,retrieval_definition.json,retrieval_report.json}` | Six changed observation populations; must not join ordinary test by ID alone |
+| `{definition}/{definition.json,model.json,model_identity.json,negatives.parquet}` | Definition, physical model payload, numerical model identity and training negatives |
+| `{definition}/{calibration,test}/{scores.parquet,ownership.parquet,candidate_dispositions.parquet,resolutions.parquet,capsules.json,failure_attribution.parquet,atlas.parquet,result.json}` | Scores/policy/final sets/evidence/evaluation; reference/test Atlas has all 21 error rows, while each Atlas row's candidate_evidence_json remains a bounded snippet |
+| `robustness/{case,spacing,punctuation,token_order,transliteration,competition}/{scores.parquet,ownership.parquet,candidate_dispositions.parquet,resolutions.parquet,capsules.json,failure_attribution.parquet,atlas.parquet,result.json,observations.json}` | Changed stages and before/after decision observations; named variant context |
+| comparisons.json, failure_atlas_summary.json, robustness.json, stability_vs_confidence.json, summary.json | Full comparisons/diagnostic summaries, including retained per-query/risk/diagnostic data where actually present; aggregates never substitute for cases |
+| scale: model_source.json, reference_model.json | Declared parent model source and model payload; physical/numerical identity distinction persists |
+| scale: observations.parquet, summary.json | 72 raw measured rows/platform plus aggregate workload observations; three sizes, three repetitions, eight stages |
+| scale: `size-{128,512,2048}/{entities.parquet,normalized.parquet,candidates.parquet,features.parquet,retrieval_fit.json,scores.parquet,ownership.parquet,candidate_dispositions.parquet,resolutions.parquet,capsules.json}` | Complete retained stage products for final measured repetition 2 only; no retained products for repetitions 0/1 or warmups |
+
+`definition` is exactly reference, logistic, without_name, without_address, without_numeric, without_retrieval, without_competition, without_cross_script, k1, no_reverse, transliterated_name or logistic_seed7. No additional definition paths are implied. The graph is chosen by the definition's retrieval field, not its scorer/name. Per-platform local `graphs/transliterated_name/test/retrieval_definition.json` retains origin_by_pair (2,932 entries in the Windows observation); provenance is a lookup, not a sixth lane.
+
+Supplemental C4 files: `{root}/reproduction.json`, `logs/public.stderr.txt`, `logs/public.stdout.json`, `logs/scale.stderr.txt`, `logs/scale.stdout.json`. These are LOCAL operational evidence, not stage tables. Producer association is recorded in the bundle/run context; absent an independently matched retained identity, do not grant them original-byte verification or use them for case reconstruction.
+
+### 30.4 Other discovered run identities and exclusions
+
+The other 172 output manifests passed their own declared manifest/hash checks. They are historical or development occurrences, not current-baseline inputs. Their exhaustive artifact paths/stages/hashes remain `{root}/{manifest key}/manifest.json.artifacts`; producer and dirty/disposition are listed below. Read-only ingestion could be safe only as separately validated, explicitly selected historical contexts, never enrichment of the current allowlist. All roots are ignored/LOCAL. Their stage-schema compatibility and domain joins were not certified by this audit's current-run checks.
+
+| Root(s), all under outputs/ | Pass | Producer | Manifests / artifacts per root | Status / baseline adapter policy |
+|---|---|---|---|---|
+| neutral-pass-a-linux, neutral-pass-a-windows | C1/C2 | 73690e95842728c25788d0f4c4551887e93c6dbc | 6 / 41 | Clean completed; historical, exclude |
+| neutral-pass-b-linux, neutral-pass-b-windows | C3 | 73690e95842728c25788d0f4c4551887e93c6dbc | 18 / 166 | Clean completed; historical, exclude |
+| pass-a-closure-linux-clean, pass-a-closure-windows-clean | C1/C2 | 98d4f1489ffb4eeccf83951ef1d53015a99d6213 | 6 / 41 | Clean completed; historical, exclude |
+| pass-a-linux-final, pass-a-linux-verified, pass-a-windows-final, pass-a-windows-verified | C1/C2 | 812f0a31d6d2d1616d69e9be6147d62b970eed38 | 6 / 41 | Dirty completed; exclude |
+| pass-a-windows | C1/C2 | 812f0a31d6d2d1616d69e9be6147d62b970eed38 | 6 / 40 | Dirty completed; exclude |
+| pass-b-linux-clean, pass-b-windows-clean | C3 | fd875dbd7e1a26ea1616f2b740a8c79b87d13e49 | 18 / 166 | Clean completed; historical, exclude |
+| pass-b-linux-development, pass-b-windows-development | C3 | 70abb57241b246bec4fcee5b26e672735588e46f | 18 / 166 | Dirty completed; exclude |
+| pass-c-linux-clean, pass-c-windows-clean | C4 | 26b20dcf7a31666e44e2e5ae19a98d0c8e6cc24b | 2 / 446 | Clean completed; historical, exclude |
+| pass-c-linux-dev, pass-c-windows-dev-final | C4 | 2773034633a4cbacd07bd7f69070a83add6d9df2 | 2 / 446 | Dirty completed; exclude |
+| pass-c-dev | C4 | 2773034633a4cbacd07bd7f69070a83add6d9df2 | 2 / 412 | Public completed; scale FAILED with zero registered artifacts; exclude |
+
+`tmp/neutral-verification-probe/manifest.json` is a negative-test probe, not a producing run. Its six registered artifact byte checks can pass while the recorded source inventory is deliberately altered. Never ingest it as recorded evidence. Fixture/test/temp material is not promoted by matching file shapes or a copied manifest. Other unregistered logs/reproduction/input copies within historical roots likewise have no case authority without independent identity/schema validation; they remain excluded.
+
+### 30.5 Gap and red-team disposition
+
+Existing current local outputs close the **data availability** portions of G03–G09, G15 and G16: complete stages, an alternative to bounded explain, all Atlas entries, per-query results/derived movement membership, representation origin, before/after perturbation sets and raw scale observations. They also supply data for G02's scoped index and permit G10's host byte verification. They do not implement indexing, an adapter, browser transport or an HTTP service. G01/G02/G10/G14 remain implementation gaps; G04's explain response remains intrinsically bounded. G11 remains unresolved wherever loaded manifests do not supply the external parent; G12/G13 remain absent capabilities outside V1. Full scale stage replay for every repetition is unavailable, even with the local files.
+
+The Candidate Resolution Ledger **survives**: native rows state observed pairs and independent gates, with a separate labelled-evaluation overlay and resource coverage. No displayed edge implies truth, score causality, exhaustive competitors or complete retrieval unless the scoped inputs prove it. The compact count of 63 candidates with eight retained examples is not an eight-candidate universe; the full local graph can prove all 63. Context mismatch, unknown model identity, missing stage evidence and absent raw records yield explicit issues, not reconstructed facts. The inventory adds no authorization for later routes, model explanation or graph polishing.
+
+Exact retained C3 macro F0.5 is `0.6145833333333334`, exact-set accuracy `0.5625`; C4 reference/logistic macro F0.5 are `0.8421052631578947` / `0.8646616541353384`; paired delta is `0.022556390977443608`, interval `[-0.015037593984962405, 0.06766917293233082]` for 133 queries, 1,000 repetitions, seed 2026. Rounded displays in Section 3 are correct. The .640 threshold, score-descending/source-ID-ascending ownership, canonical rejection precedence, explicit-ambiguity override, 21 reference errors, workload counts and uncontrolled timing limitations required no backend/evidence correction.

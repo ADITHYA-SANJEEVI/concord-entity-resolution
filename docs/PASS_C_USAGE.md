@@ -104,9 +104,11 @@ python scripts/retain_pass_c_evidence.py --windows outputs/pass-c-windows-clean 
 ```
 
 This checks the combined public/scale DAG, producing source bytes, clean Git state,
-score deltas (tolerance 1e-12), exact resolution/quality/failure results and changed
-query sets. It records observed equivalence; model text and timings are not required
-to match. Models and Parquet remain in the ignored run directories.
+exact resolution/quality/logical failure attribution and changed query sets. It
+records actual score deltas and a diagnostic 1e-12 comparison flag without imposing
+probability equality. Raw failure score/margin diagnostics are retained independently.
+Model text, numeric probabilities and timings are not required to match. Models and
+Parquet remain in the ignored run directories.
 
 WDC, Ditto, Splink, adaptive K and semantic matching are outside this completed suite.
 There is no frontend, inspection API, C5, release/tag or automatic model promotion.

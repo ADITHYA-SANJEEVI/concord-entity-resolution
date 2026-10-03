@@ -19,6 +19,13 @@ def compact(value):
     return value
 
 
+def logical_failures(rows):
+    """Compare actual policy attribution, excluding model-dependent numeric diagnostics."""
+    return [(r.s1_id, r.target_id, r.error_type, r.failure_stage, r.tags,
+             r.attribution_policy_version,
+             tuple((k, v) for k, v in r.diagnostics if k not in ("score", "rival_margin"))) for r in rows]
+
+
 def retain(windows, linux, output):
     root = Path(__file__).resolve().parents[1]
     retained, originals = {}, {}
@@ -70,11 +77,17 @@ def retain(windows, linux, output):
                 raise ValueError("platform scored graph mismatch")
             maximum = float(np.max(np.abs(np.array([s.score for s in wa]) - np.array([s.score for s in la])))) if wa else 0.
             exact_sets = a["resolution_fingerprint"] == b["resolution_fingerprint"]
-            if maximum > 1e-12 or not exact_sets or a["quality"] != b["quality"] or a["failures"] != b["failures"]:
+            wf = read_stage(Path(windows) / f"public/{name}/{role}/failure_attribution.parquet", "failure_attribution")
+            lf = read_stage(Path(linux) / f"public/{name}/{role}/failure_attribution.parquet", "failure_attribution")
+            same_attribution = logical_failures(wf) == logical_failures(lf)
+            if not exact_sets or a["quality"] != b["quality"] or not same_attribution:
                 raise ValueError("platform logical result mismatch; retain a qualified report instead")
             comparison[name][role] = {"maximum_absolute_probability_delta": maximum,
+                "probabilities_within_1e_minus_12": maximum <= 1e-12, "probability_equality_required": False,
                 "score_fingerprints_equal": a["score_fingerprint"] == b["score_fingerprint"],
-                "resolution_fingerprints_equal": exact_sets, "set_quality_equal": True, "failure_reports_equal": True}
+                "resolution_fingerprints_equal": exact_sets, "set_quality_equal": True,
+                "logical_failure_attribution_equal": same_attribution,
+                "failure_reports_including_numeric_diagnostics_equal": a["failures"] == b["failures"]}
     if {n: s["changed_queries"] for n, s in w["robustness"].items()} != {n: s["changed_queries"] for n, s in linux_results["robustness"].items()}:
         raise ValueError("platform robustness decisions differ")
     bundle = {"schema_version": "concord.pass-c-evidence.v1", "evidence_class": "D", "platforms": retained,

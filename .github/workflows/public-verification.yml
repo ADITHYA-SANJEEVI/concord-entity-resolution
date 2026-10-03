@@ -1,4 +1,4 @@
-name: Concord public C1-C3 verification
+name: Concord public C1-C4 verification
 on: [push, pull_request, workflow_dispatch]
 jobs:
   public-contracts:
@@ -19,6 +19,7 @@ jobs:
       - run: git diff --check
       - run: python scripts/reproduce_pass_a.py --output outputs/ci-pass-a
       - run: python scripts/reproduce_pass_b.py --output outputs/ci-pass-b
+      - run: python scripts/reproduce_pass_c.py --output outputs/ci-pass-c
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -29,3 +30,8 @@ jobs:
         with:
           name: pass-b-${{ matrix.os }}
           path: outputs/ci-pass-b
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pass-c-${{ matrix.os }}
+          path: outputs/ci-pass-c

@@ -1,4 +1,4 @@
-"""Gated C1/C2/C3 CLI; C4 surfaces remain unavailable."""
+"""Gated Concord core CLI with public C4 research benchmarks."""
 
 import argparse
 import platform
@@ -304,13 +304,21 @@ def parser() -> argparse.ArgumentParser:
     from concord.c3_cli import add_parsers
 
     add_parsers(verbs)
+    from concord.c4_cli import add_parsers as add_c4_parsers
+
+    add_c4_parsers(verbs)
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
-        if args.verb in ("train", "resolve", "evaluate"):
+        if args.verb == "benchmark":
+            from concord.c4_cli import command as c4_command
+
+            with redirect_stdout(sys.stderr):
+                result = c4_command(args)
+        elif args.verb in ("train", "resolve", "evaluate"):
             from concord.c3_cli import command
 
             # Retain LightGBM diagnostics on stderr; stdout remains canonical JSON.

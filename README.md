@@ -63,6 +63,15 @@ changes under perturbations. The scale recipe runs 128, 512, and 2,048 source qu
 with one warmup and three measured repetitions per size. Timings and sampled process
 RSS describe those workloads; they do not establish production capacity.
 
+| Held-out synthetic fixture | Queries | Macro F0.5 |
+|---|---:|---:|
+| C3 integration | 16 | 0.614583 |
+| C4 LightGBM reference | 133 | 0.842105 |
+| C4 logistic comparison | 133 | 0.864662 |
+
+The C4 paired difference interval includes zero (-0.015038 to
++0.067669); it establishes no scorer winner on this fixture.
+
 Current measurements and producing identities are in [Pass A](PASS_A_EVIDENCE.md),
 [Pass B](PASS_B_EVIDENCE.md), and [Pass C](PASS_C_EVIDENCE.md). Model comparisons are
 diagnostic; the suite does not automatically promote a scorer or tune the threshold.
